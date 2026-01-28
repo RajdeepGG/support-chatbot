@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -12,6 +12,7 @@ import sla
 import offer_logic
 import llm
 import mock_offer_api
+import guard_rails
 
 app = FastAPI()
 
@@ -85,8 +86,24 @@ async def startup_event():
 # Chat Logic (Refactored for reuse)
 # -------------------------------------------------------------------------
 
-async def process_chat(user_msg: str, offer_id: Optional[str]):
-    # 1. Determine Priority
+async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = "unknown"):
+    # 1. Input Validation
+    validation_result = guard_rails.input_validator.validate_input(user_msg)
+    if not validation_result["valid"]:
+        yield validation_result["message"]
+        return
+    
+    # 2. Content Filtering
+    if guard_rails.content_filter.contains_blocked_content(user_msg):
+        yield "I'm sorry, I cannot process this request due to security policies. Please contact support for assistance."
+        return
+    
+    # 3. Rate Limiting
+    if await guard_rails.rate_limiter.is_rate_limited(client_ip):
+        yield "Rate limit exceeded. Please wait a moment before sending more messages."
+        return
+    
+    # 4. Determine Priority
     priority_level = priority.determine_priority(user_msg)
     print(f"Priority: {priority_level}")
 
@@ -114,14 +131,25 @@ async def process_chat(user_msg: str, offer_id: Optional[str]):
     system_prompt = (
         "You are a helpful support assistant. Use the following context to answer the user's question. "
         "If the answer is not in the context, say you don't know. "
-        "Keep the answer concise and helpful."
+        "Keep the answer concise and helpful. "
+        "Do not provide any information about credit cards, bank accounts, passwords, or other sensitive personal information. "
+        "Do not discuss hacking, exploits, vulnerabilities, or illegal activities. "
+        "If asked about sensitive topics, politely decline and suggest contacting support."
     )
     
     full_prompt = f"{system_prompt}\n\nContext:\n{context_str}\n\nUser Question: {user_msg}\nAnswer:"
 
-    # Yield chunks from LLM
+    # Yield chunks from LLM and filter responses
+    response_buffer = ""
     for chunk in llm.ask_llm(full_prompt):
+        response_buffer += chunk
         yield chunk
+    
+    # Final content filtering on complete response
+    filtered_response = guard_rails.content_filter.filter_response(response_buffer)
+    if filtered_response != response_buffer:
+        # If filtering occurred, yield the filtered version
+        yield "\n" + filtered_response
 
 # -------------------------------------------------------------------------
 # Endpoints
@@ -133,9 +161,11 @@ class ChatRequest(BaseModel):
     offer_id: Optional[str] = None
 
 @app.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, client_request: Request):
+    client_ip = client_request.client.host if client_request.client else "unknown"
+    
     async def response_generator():
-        async for chunk in process_chat(request.message, request.offer_id):
+        async for chunk in process_chat(request.message, request.offer_id, client_ip):
             yield chunk
             
     return StreamingResponse(response_generator(), media_type="text/plain")
@@ -144,6 +174,10 @@ async def chat(request: ChatRequest):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    
+    # Get client IP for rate limiting
+    client_ip = websocket.client.host if websocket.client else "unknown"
+    
     try:
         while True:
             data = await websocket.receive_text()
@@ -162,15 +196,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
 
             # Stream response back
-            # We assume the UI has already printed "You: [msg]"
-            # We print "Bot: " (or UI handles it)
-            # Let's send a newline first to ensure separation if needed, or rely on UI formatting.
-            
-            async for chunk in process_chat(user_msg, offer_id):
+            async for chunk in process_chat(user_msg, offer_id, client_ip):
                 await manager.send_message(chunk, websocket)
             
-            # Send a delimiter or just let it be? 
-            # For this simple chat, we just stream chunks.
             # Update activity again after sending response
             manager.update_activity(websocket)
             
