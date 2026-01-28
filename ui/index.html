@@ -114,50 +114,55 @@
   </div>
 
   <script>
-    const sessionId = crypto.randomUUID();
+    let ws;
+    const chat = document.getElementById("chat");
+    const msgInput = document.getElementById("msg");
+    const offerSelect = document.getElementById("offer");
 
-    async function send() {
-      const msgInput = document.getElementById("msg");
-      const offerSelect = document.getElementById("offer");
-      const chat = document.getElementById("chat");
+    function connect() {
+        // Use current host to determine WS URL, or hardcode for dev
+        ws = new WebSocket("ws://127.0.0.1:8000/ws");
+        
+        ws.onopen = () => {
+            console.log("Connected to WebSocket");
+        };
 
+        ws.onmessage = (event) => {
+            chat.textContent += event.data;
+            chat.scrollTop = chat.scrollHeight;
+        };
+
+        ws.onclose = () => {
+            console.log("Disconnected. Reconnecting...");
+            setTimeout(connect, 3000);
+        };
+        
+        ws.onerror = (err) => {
+             console.error("WS Error", err);
+             chat.textContent += "\nError: Connection lost.\n";
+        };
+    }
+
+    connect();
+
+    function send() {
       const msg = msgInput.value;
       const offer = offerSelect.value;
 
       if (!msg) return;
 
       chat.textContent += `You: ${msg}\nBot: `;
-      chat.scrollTop = chat.scrollHeight; // Auto scroll to bottom
+      chat.scrollTop = chat.scrollHeight;
 
       msgInput.value = "";
 
-      try {
-        const response = await fetch("http://127.0.0.1:8000/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session_id: sessionId,
+      if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
             message: msg,
             offer_id: offer
-          })
-        });
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          chat.textContent += decoder.decode(value);
-          chat.scrollTop = chat.scrollHeight; // Auto scroll as data comes in
-        }
-
-        chat.textContent += "\n\n";
-        chat.scrollTop = chat.scrollHeight;
-
-      } catch (error) {
-        chat.textContent += "Error: Could not reach server.\n\n";
-        chat.scrollTop = chat.scrollHeight;
+          }));
+      } else {
+          chat.textContent += "Error: No connection.\n\n";
       }
     }
   </script>
