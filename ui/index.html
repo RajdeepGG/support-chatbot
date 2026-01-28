@@ -102,9 +102,9 @@
 
     <select id="offer">
       <option value="">Select Offer</option>
-      <option value="Amazon Cashback">Amazon Cashback</option>
-      <option value="Flipkart Rewards">Flipkart Rewards</option>
-      <option value="Paytm Wallet">Paytm Wallet</option>
+      <option value="925599">Netclan Explorer</option>
+      <option value="111222">Cool Gaming App</option>
+      <option value="333444">Shopping Cashback</option>
     </select>
 
     <input id="msg" placeholder="Ask something..." />
@@ -138,7 +138,7 @@
           body: JSON.stringify({
             session_id: sessionId,
             message: msg,
-            selected_offer: offer
+            offer_id: offer
           })
         });
 

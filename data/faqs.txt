@@ -1,51 +1,49 @@
 General FAQs
 
-Q: How do I reset my password?
-A: Click on “Forgot Password” on the login screen and follow the instructions.
+Q: I did not get my reward.
+A: Please check if the offer status is "Verified" or "Completed". If it is still pending or under verification, wait for the specified time.
 
-Q: How long does a refund take?
-A: Refunds are processed within 5–7 business days.
+Q: Why is my offer status under “verification”
+A: You should wait for 24 - 48 hours. After completing the offer, advertisers verify the offer compilation. Usually, the verification time is 48 - 72 hours.
 
-Q: How can I contact support?
-A: You can contact support via email at support@company.com
-.
+Q: Why offer status show as “expired.”
+A: Rewards will not be credited if the offer criteria and rules are not met, if the app/offer is uninstalled immediately after offer completion, or if the advertiser is unable to track the offer completion.
 
-Offer Status FAQs
+Q: What can I do after my offer expires?
+A: Once an offer expires, rewards cannot be credited. You can explore other similar active offers in the app and continue earning rewards.
 
-OFFER_ONGOING
+Q: What is the Pending status shown on my offer?
+A: Pending status means the advertiser is verifying the offer completion, and this process is usually completed within 24 48 hours.
 
-Your offer is currently ongoing.
+Q: I did not get my Gift card ( Gift card purchased successfully, but the user has not received the gift card email).
+A: The gift card email may be delivered to your Spam/Junk folder, so please check there as well. If you still haven’t received it, contact the merchant directly at XOXODAY by emailing cs@xoxoday.com
 
-Please ensure all required steps are completed.
+Q: I withdrew from my account, but I did not get my money.
+A: The transfer usually happens instantly, but the bank may take up to 72 hours or more to process the payment from their side, depending on the circumstances.
 
-Rewards are credited only after successful completion and verification.
+Q: When will the Rewards be added to my wallet?
+A: The rewards will be credited to your account once advertisers verify that you have completed all the steps mentioned in the offer.
 
-OFFER_COMPLETED_UNDER_VERIFICATION
+Q: What is an Ongoing Offer?
+A: An Ongoing Offer is one you have completed partially, i.e., where you have not completed all the steps and are still in completion progress.
 
-You have completed the offer, and your reward is under verification.
+Q: When will I get the referral reward?
+A: Your friend must enter your referral code during signup. Once they complete three offers, both of you receive rewards, and you earn a bonus worth 50% of what your friend earns from those offers.
 
-Verification may take 24–72 hours depending on the advertiser and tracking delays.
+Q: How long will it take to transfer money from Sikka to my bank account?
+A: The transfer usually happens instantly, but the bank may take up to 72 hours or more to process the payment from their side, depending on the circumstances.
 
-If the reward is not credited after 72 hours, please contact support.
+Q: What are some reasons my money is not getting transferred to my bank account?
+A: You may have entered the wrong UPI-ID
 
-OFFER_COMPLETED_VERIFIED
+Q: What is “Avg Reward Time”?
+A: “Avg Reward Time” shows the estimated time to receive a reward based on other users’ experience. The actual time may vary depending on offer rules and verification. If the reward isn’t credited after 72 hours, you can contact support.
 
-Your offer has been completed and verified.
+Q: I redeemed my rewards, and I did not get my money.
+A: If you redeemed coins for a gift card, please check your Spam/Junk folder or contact the merchant XOXODAY at cs@xoxoday.com . For UPI redemptions, payments are usually instant, but in some cases, the bank may take up to 72 hours or more to process the transaction.
 
-The reward will be credited shortly.
+Q: Is your App Fake?
+A: No, our app is genuine and trusted by many users. Rewards are credited once offer rules are followed and advertiser verification is completed. If you ever face an issue, our support team is here to help.
 
-If it is still not credited after 72 hours, contact support.
-
-OFFER_EXPIRED
-
-This offer has expired.
-
-Rewards cannot be credited for expired offers.
-
-Please check the offer validity period before participating.
-
-OFFER_UNKNOWN
-
-We are unable to determine the status of this offer.
-
-Please contact support for further assistance.
+Q: After completing the task, points are not credited.
+A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
