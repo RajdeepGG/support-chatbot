@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 def assign_sla(priority: str):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     if priority == "HIGH":
         return {

@@ -19,8 +19,15 @@ MOCK_OFFERS_DB = {
     }
 }
 
+def get_offer_details(offer_id):
+    try:
+        oid = int(offer_id)
+        return MOCK_OFFERS_DB.get(oid)
+    except (ValueError, TypeError):
+        return None
+
 def get_offer_status(offer_id: int):
-    return MOCK_OFFERS_DB.get(offer_id)
+    return get_offer_details(offer_id)
 
 
 def get_offer_by_title(title: str):
@@ -34,5 +41,3 @@ def resolve_offer_id_by_title(title: str):
         if offer["title"].lower() == title.lower():
             return offer_id
     return None
-
-
