@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <title>Customer Support Chat</title> -->
+  <style>
+    /* Reset default margin/padding */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f4f7f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+    }
+
+    .chat-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 4px #4a90e2;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    #chat {
+      background: #f1f3f6;
+      border-radius: 8px;
+      padding: 12px;
+      height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+    }
+
+    /* Scrollbar styling */
+    #chat::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    #chat::-webkit-scrollbar-track {
+      background: #f1f3f6;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <!-- <h3>Customer Support Chat</h3> -->
+
+    <select id="offer">
+      <option value="">Select Offer</option>
+      <option value="Amazon Cashback">Amazon Cashback</option>
+      <option value="Flipkart Rewards">Flipkart Rewards</option>
+      <option value="Paytm Wallet">Paytm Wallet</option>
+    </select>
+
+    <input id="msg" placeholder="Ask something..." />
+    <button onclick="send()">Send</button>
+
+    <pre id="chat"></pre>
+  </div>
+
+  <script>
+    const sessionId = crypto.randomUUID();
+
+    async function send() {
+      const msgInput = document.getElementById("msg");
+      const offerSelect = document.getElementById("offer");
+      const chat = document.getElementById("chat");
+
+      const msg = msgInput.value;
+      const offer = offerSelect.value;
+
+      if (!msg) return;
+
+      chat.textContent += `You: ${msg}\nBot: `;
+      chat.scrollTop = chat.scrollHeight; // Auto scroll to bottom
+
+      msgInput.value = "";
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionId,
+            message: msg,
+            selected_offer: offer
+          })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          chat.textContent += decoder.decode(value);
+          chat.scrollTop = chat.scrollHeight; // Auto scroll as data comes in
+        }
+
+        chat.textContent += "\n\n";
+        chat.scrollTop = chat.scrollHeight;
+
+      } catch (error) {
+        chat.textContent += "Error: Could not reach server.\n\n";
+        chat.scrollTop = chat.scrollHeight;
+      }
+    }
+  </script>
+
+</body>
+</html>

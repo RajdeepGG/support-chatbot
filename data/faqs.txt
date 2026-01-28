@@ -1,0 +1,51 @@
+General FAQs
+
+Q: How do I reset my password?
+A: Click on “Forgot Password” on the login screen and follow the instructions.
+
+Q: How long does a refund take?
+A: Refunds are processed within 5–7 business days.
+
+Q: How can I contact support?
+A: You can contact support via email at support@company.com
+.
+
+Offer Status FAQs
+
+OFFER_ONGOING
+
+Your offer is currently ongoing.
+
+Please ensure all required steps are completed.
+
+Rewards are credited only after successful completion and verification.
+
+OFFER_COMPLETED_UNDER_VERIFICATION
+
+You have completed the offer, and your reward is under verification.
+
+Verification may take 24–72 hours depending on the advertiser and tracking delays.
+
+If the reward is not credited after 72 hours, please contact support.
+
+OFFER_COMPLETED_VERIFIED
+
+Your offer has been completed and verified.
+
+The reward will be credited shortly.
+
+If it is still not credited after 72 hours, contact support.
+
+OFFER_EXPIRED
+
+This offer has expired.
+
+Rewards cannot be credited for expired offers.
+
+Please check the offer validity period before participating.
+
+OFFER_UNKNOWN
+
+We are unable to determine the status of this offer.
+
+Please contact support for further assistance.
