@@ -68,7 +68,7 @@ async def inactivity_monitor():
                 # If inactive for > 30 seconds and haven't alerted yet
                 if now - last > 30 and not manager.alerted.get(websocket, False):
                     # Send nudge
-                    nudge_msg = "\n\nBot: Still there? Reply if you need assistance."
+                    nudge_msg = "\n\nStill there? Reply if you need assistance."
                     await manager.send_message(nudge_msg, websocket)
                     manager.alerted[websocket] = True
             except Exception as e:

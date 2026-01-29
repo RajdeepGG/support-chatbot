@@ -1,7 +1,7 @@
 MOCK_OFFERS_DB = {
     925599: {
         "offer_id": 925599,
-        "title": "Netclan Explorer",
+        "title": "Woodblock Puzzle Game",
         "user_status": "COMPLETED",
         "verification_status": "UNDER_VERIFICATION",
         "estimated_time_minutes": 8,
@@ -9,7 +9,7 @@ MOCK_OFFERS_DB = {
     },
     111222: {
         "offer_id": 111222,
-        "title": "Cool Gaming App",
+        "title": "Sea Block",
         "user_status": "ONGOING",
         "verification_status": None,
         "estimated_time_minutes": 5,
@@ -17,7 +17,7 @@ MOCK_OFFERS_DB = {
     },
     333444: {
         "offer_id": 333444,
-        "title": "Shopping Cashback",
+        "title": "Carrom Pool: Disc Game ",
         "user_status": "EXPIRED",
         "verification_status": None,
         "estimated_time_minutes": 15,

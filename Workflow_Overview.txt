@@ -1,0 +1,90 @@
+AI Ticket Responder – Workflow Overview
+
+Summary
+- Purpose: Guided customer support for offer-related queries with FAQ-driven answers, guard rails, and a modern UI flow.
+- Mode: Web UI connects via WebSocket to a FastAPI backend; responses stream from a local LLM with RAG context.
+- Key features: Status-aware guidance, inactivity nudges, domain guard, input validation, rate limiting, content filtering, and expired-offer recommendations.
+
+Tech Stack
+- Frontend: Plain HTML/CSS/JS (no framework), WebSocket client.
+- Backend: FastAPI with HTTP and WebSocket endpoints [main.py].
+- Knowledge: RAG using local file FAQs [data/faqs.txt] and Chroma vector DB [rag.py].
+- LLM: Ollama HTTP API streaming [llm.py]; model configurable via environment variables.
+- Business logic: Offer status mapping and queries [offer_logic.py], mock offer API [mock_offer_api.py].
+- Guard rails: Input validation, rate limiting, content filtering, domain guard [guard_rails.py].
+
+Core Components
+- UI (ui/index.html)
+  - Header: Offer title + status badge; hidden until an offer is selected.
+  - Chat: Message bubbles for user and bot; streaming updates fill the bot bubble live.
+  - Suggestions: Contextual buttons; choices appear as user bubbles and trigger guided flows.
+  - Input row: Hidden by default; revealed only when “I’d rather type out my issue” is selected.
+- Backend (backend/main.py)
+  - WebSocket /ws: Streams chunks to the UI and sends a delimiter when the response ends.
+  - HTTP /chat: Backward-compatible streaming via text/plain.
+  - Inactivity monitor: Sends a short nudge if no user activity for 30+ seconds.
+  - Shared chat logic: process_chat(user_msg, offer_id, client_ip) – all checks and response generation.
+- Knowledge + LLM
+  - rag.load_docs/search_docs: Loads/queries FAQs; resets collection on startup to avoid duplicates.
+  - llm.ask_llm: Streams model output; errors are surfaced as text.
+- Offer logic
+  - offer_logic.get_offer_faq_query: Builds status-aware queries (ONGOING/COMPLETED/EXPIRED).
+  - mock_offer_api: Mock DB with status, estimated time, difficulty, and recommendations.
+- Guard rails
+  - InputValidator: Length/repetition checks.
+  - RateLimiter: Per-IP sliding window.
+  - ContentFilter: Blocks/warns sensitive topics.
+  - DomainGuard: Deflects off‑topic requests to offer support.
+
+End-to-End Flow (Typed Issue)
+1. User selects an offer in the UI; the header shows the title and a status badge.
+2. UI displays short, status-specific defaults (e.g., ongoing → “continue for 20–30 minutes”).
+3. User clicks “I’d rather type out my issue”; the input row appears.
+4. On Send:
+   - UI adds a user bubble and creates an empty bot bubble.
+   - UI sends {message, offer_id} over WebSocket.
+5. Backend process_chat:
+   - Input validation → content filtering → rate limiting → domain guard.
+   - Offer context: fetch mock offer and build status-aware FAQ query.
+   - RAG search: retrieve relevant FAQ snippets; if none, trigger human fallback.
+   - LLM prompt: professional tone, concise output (2–3 sentences), security constraints.
+   - Streams chunks; UI fills the bot bubble. After completion, backend sends “\\n\\n”.
+6. Post-response enrichments:
+   - If offer is EXPIRED: append brief recommendations (easy/quick alternatives).
+7. Inactivity:
+   - If the user is idle for 30s: a short nudge message is sent via WebSocket.
+
+Guided Button Flow (No Typing)
+- After an offer is selected, suggestions appear and vary by status:
+  - Ongoing/Completed:
+    - “I’m not able to complete the offer” → Help Options:
+      - Watch 2‑min guide → “Watch now” CTA → “Happy earning 💰🚀”.
+      - View step‑by‑step instructions → bullet checklist → then:
+        - Check out other offers → shows two quick alternatives; clicking switches the selection and resets guidance.
+        - Report this issue to us → opens mailto support@greedygame.com with prefilled subject/body; shows “End Chat” or try other offers.
+  - Expired:
+    - “Check out other available offers” → shows alternatives; switches selection on click.
+    - “Report this issue to us” → opens mailto; shows “End Chat” or try other offers.
+- Every button selection is recorded as a user bubble in the transcript.
+
+Connections Overview
+- UI ↔ Backend: WebSocket for live chat; HTTP endpoint retained for compatibility.
+- Backend ↔ RAG: rag.search_docs uses embedded FAQs; prompt is composed with retrieved context.
+- Backend ↔ LLM: llm.ask_llm streams text from Ollama; model name and URL via env vars.
+- Backend guard rails: Pre‑LLM checks gate requests; post‑LLM filtering sanitizes final text.
+
+Operational Notes
+- Start backend: uvicorn main:app --reload --port 8000 (from backend/ with venv).
+- Ollama: Ensure OLLAMA_URL and MODEL_NAME env vars if non‑default.
+- Data updates: Edit [data/faqs.txt] and restart; collection resets on startup.
+- Security: No secrets embedded; avoid sending PII in chat; domain guard deflects non-offer topics.
+
+Key Files (absolute paths in this repo)
+- Backend entry: /Users/rajdeeproy/ai_ticket_responder/backend/main.py
+- UI: /Users/rajdeeproy/ai_ticket_responder/ui/index.html
+- RAG: /Users/rajdeeproy/ai_ticket_responder/backend/rag.py
+- LLM client: /Users/rajdeeproy/ai_ticket_responder/backend/llm.py
+- Offer logic: /Users/rajdeeproy/ai_ticket_responder/backend/offer_logic.py
+- Mock offers: /Users/rajdeeproy/ai_ticket_responder/backend/mock_offer_api.py
+- Guard rails: /Users/rajdeeproy/ai_ticket_responder/backend/guard_rails.py
+- FAQs: /Users/rajdeeproy/ai_ticket_responder/data/faqs.txt

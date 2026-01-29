@@ -3,175 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- <title>Customer Support Chat</title> -->
   <style>
-    /* Reset default margin/padding */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: #f4f7f9;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 40px 20px;
-    }
-
-    .chat-container {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    h3 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 4px #4a90e2;
-    }
-
-    button {
-      padding: 10px 16px;
-      background-color: #4a90e2;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #357ABD;
-    }
-
-    #chat {
-      background: #f1f3f6;
-      border-radius: 8px;
-      padding: 12px;
-      height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      margin-top: 10px;
-      border: 1px solid #ddd;
-    }
-
-    /* Scrollbar styling */
-    #chat::-webkit-scrollbar {
-      width: 8px;
-    }
-    #chat::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    #chat::-webkit-scrollbar-track {
-      background: #f1f3f6;
-      border-radius: 4px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { background: #f4f7f9; display: flex; justify-content: center; align-items: flex-start; padding: 24px 12px; }
+    .app { width: 100%; max-width: 420px; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: #0b2c6a; color: #fff; padding: 16px; display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #e5eefc; }
+    .title { flex: 1; }
+    .title .name { font-weight: 600; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; margin-top: 6px; }
+    .badge.ongoing { background: #eaf7ed; color: #1f7a2e; }
+    .badge.expired { background: #fdeaea; color: #b42727; }
+    .badge.completed { background: #eaf1fd; color: #2c5ac7; }
+    .badge.hidden { display: none; }
+    .content { padding: 12px; }
+    .controls { display: flex; gap: 8px; margin-bottom: 12px; }
+    select, input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #ccd3e0; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 4px rgba(74,144,226,.6); }
+    .chat { background: #f7f8fb; border: 1px solid #e3e7ef; min-height: 320px; max-height: 60vh; border-radius: 12px; padding: 12px; overflow-y: auto; }
+    .bubble { max-width: 85%; border-radius: 12px; padding: 10px 12px; margin: 8px 0; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .bubble.user { margin-left: auto; background: #eaf1ff; color: #193b7a; }
+    .bubble.bot { background: #fff; border: 1px solid #e4e8f2; }
+    .suggest { display: flex; gap: 8px; margin-top: 10px; }
+    .suggest button { flex: 1; background: #eef2fa; color: #1b2a4a; border: 1px solid #dbe1f0; border-radius: 12px; padding: 10px; font-size: 14px; }
+    .inputRow { display: flex; gap: 8px; margin-top: 10px; }
+    .send { padding: 10px 16px; background: #4a90e2; color: #fff; border: none; border-radius: 8px; }
+    .footer { text-align: center; color: #6a7692; font-size: 13px; padding: 12px; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <div class="chat-container">
-    <!-- <h3>Customer Support Chat</h3> -->
-
-    <select id="offer">
-      <option value="">Select Offer</option>
-      <option value="925599">Netclan Explorer</option>
-      <option value="111222">Cool Gaming App</option>
-      <option value="333444">Shopping Cashback</option>
-    </select>
-
-    <input id="msg" placeholder="Ask something..." />
-    <button onclick="send()">Send</button>
-
-    <pre id="chat"></pre>
+  <div class="app">
+    <div class="header">
+      <div class="avatar"></div>
+      <div class="title">
+        <div class="name" id="offerName">Support</div>
+        <div class="badge hidden" id="offerBadge"></div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="controls">
+        <select id="offer">
+          <option value="">Select Offer</option>
+          <option value="925599">WoodBlock Puzzle Game</option>
+          <option value="111222">Sea Block</option>
+          <option value="333444">Carrom Pool: Disc Game</option>
+        </select>
+      </div>
+      <div class="chat" id="chatLog"></div>
+      <div class="suggest hidden" id="suggestRow">
+        <button id="btnNotAble">I'm not able to complete the offer</button>
+        <button id="btnType">I'd rather type out my issue</button>
+      </div>
+      <div class="inputRow hidden" id="inputRow">
+        <input id="msg" placeholder="Type your message" />
+        <button class="send" id="sendBtn">Send</button>
+      </div>
+    </div>
+    <div class="footer">Select an option above to continue</div>
   </div>
 
   <script>
     let ws;
-    const chat = document.getElementById("chat");
+    const chatLog = document.getElementById("chatLog");
     const msgInput = document.getElementById("msg");
+    const sendBtn = document.getElementById("sendBtn");
+    const inputRow = document.getElementById("inputRow");
     const offerSelect = document.getElementById("offer");
+    const offerName = document.getElementById("offerName");
+    const offerBadge = document.getElementById("offerBadge");
+    const btnNotAble = document.getElementById("btnNotAble");
+    const btnType = document.getElementById("btnType");
+    const suggestRow = document.getElementById("suggestRow");
+    let currentBotBubble = null;
+    const statusById = { "925599": "Completed", "111222": "Ongoing", "333444": "Expired" };
+    const badgeClassByStatus = { "Completed": "completed", "Ongoing": "ongoing", "Expired": "expired" };
 
-    function connect() {
-        // Use current host to determine WS URL, or hardcode for dev
-        <!-- ws = new WebSocket("ws://127.0.0.1:8000/ws");  this is the original websocket url-->
-        ws = new WebSocket("ws://10.0.2.2:8000/ws");
-        
-        ws.onopen = () => {
-            console.log("Connected to WebSocket");
-        };
-
-        ws.onmessage = (event) => {
-            chat.textContent += event.data;
-            chat.scrollTop = chat.scrollHeight;
-        };
-
-        ws.onclose = () => {
-            console.log("Disconnected. Reconnecting...");
-            setTimeout(connect, 3000);
-        };
-        
-        ws.onerror = (err) => {
-             console.error("WS Error", err);
-             chat.textContent += "\nError: Connection lost.\n";
-        };
+    function addBubble(text, who) {
+      const b = document.createElement("div");
+      b.className = "bubble " + who;
+      b.textContent = text;
+      chatLog.appendChild(b);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return b;
     }
 
+    function connect() {
+      ws = new WebSocket("ws://10.0.2.2:8000/ws");
+      ws.onopen = () => {};
+      ws.onmessage = (event) => {
+        if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
+        if (event.data === "\n\n") {
+          currentBotBubble = null;
+          return;
+        }
+        currentBotBubble.textContent += event.data;
+        chatLog.scrollTop = chatLog.scrollHeight;
+      };
+      ws.onclose = () => { setTimeout(connect, 3000); };
+      ws.onerror = () => { addBubble("Error: Connection lost.", "bot"); };
+    }
     connect();
 
     offerSelect.addEventListener("change", () => {
-      chat.textContent = "";
+      chatLog.innerHTML = "";
       msgInput.value = "";
+      inputRow.classList.add("hidden");
+      suggestRow.classList.add("hidden");
+      const title = offerSelect.options[offerSelect.selectedIndex]?.text || "Support";
+      offerName.textContent = title;
+      if (!offerSelect.value) {
+        offerBadge.textContent = "";
+        offerBadge.className = "badge hidden";
+      } else {
+        const status = statusById[offerSelect.value] || "Ongoing";
+        offerBadge.textContent = status;
+        offerBadge.className = "badge " + (badgeClassByStatus[status] || "ongoing");
+        suggestRow.classList.remove("hidden");
+        // Default guided messages per status
+        if (status === "Ongoing") {
+          addBubble("I see that you've started this offer! 🎯", "bot");
+          addBubble("Advertisers typically take 24–48 hours to verify your task and process rewards. Please continue using the app/game for 20–30 minutes. 🎮", "bot");
+        } else if (status === "Completed") {
+          addBubble("Your offer is under verification. This typically takes 24–48 hours.", "bot");
+          addBubble("You can explore other offers or type your issue if you need help.", "bot");
+        } else if (status === "Expired") {
+          addBubble("This offer has expired.", "bot");
+          addBubble("You can try other available offers or type your issue for assistance.", "bot");
+        }
+        // Set options per status
+        setOptionsForStatus(status);
+      }
     });
 
+    function setSuggestions(items) {
+      suggestRow.innerHTML = "";
+      items.forEach(({ text, onClick }) => {
+        const btn = document.createElement("button");
+        btn.textContent = text;
+        btn.onclick = () => { addBubble(text, "user"); onClick(); };
+        suggestRow.appendChild(btn);
+      });
+    }
+
+    function showHelpOptions() {
+      addBubble("Let’s get you back on track. Choose an option:", "bot");
+      setSuggestions([
+        { text: "Watch 2‑min guide", onClick: showWatchGuide },
+        { text: "View step‑by‑step instructions", onClick: showStepByStep }
+      ]);
+    }
+
+    function showWatchGuide() {
+      addBubble("Watch a short guide to complete the offer 🎯", "bot");
+      const btn = document.createElement("button");
+      btn.className = "send";
+      btn.textContent = "Watch now";
+      btn.onclick = () => {
+        addBubble("Happy earning 💰🚀", "bot");
+        setSuggestions([]);
+      };
+      const holder = document.createElement("div");
+      holder.style.marginTop = "8px";
+      holder.appendChild(btn);
+      chatLog.appendChild(holder);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function showStepByStep() {
+      addBubble("Step‑by‑step Instructions:", "bot");
+      addBubble("• Install the app\n• Use for 10+ minutes ⏳\n• Sign up with valid details 📝\n• Don’t uninstall 🚫", "bot");
+      setSuggestions([
+        { text: "Check out other available offers", onClick: showBrowseOffers },
+        { text: "Report this issue to us", onClick: showReportIssue }
+      ]);
+    }
+
+    function showBrowseOffers() {
+      addBubble("Here are new offers 🎉 Click to get started:", "bot");
+      const current = offerSelect.value;
+      const options = Array.from(offerSelect.options)
+        .filter(o => o.value && o.value !== current)
+        .slice(0, 2);
+      setSuggestions(options.map(o => ({
+        text: o.text,
+        onClick: () => {
+          offerSelect.value = o.value;
+          offerSelect.dispatchEvent(new Event("change"));
+          addBubble("Happy earning 💰🚀", "bot");
+          setSuggestions([]);
+        }
+      })));
+    }
+
+    function showReportIssue() {
+      const title = offerSelect.options[offerSelect.selectedIndex]?.text || "Offer";
+      const offerId = offerSelect.value || "";
+      const subject = encodeURIComponent(`Issue with offer ${title}${offerId ? ` (${offerId})` : ""}`);
+      const body = encodeURIComponent("Describe your issue briefly, including screenshots if possible.");
+      const mailto = `mailto:support@greedygame.com?subject=${subject}&body=${body}`;
+      addBubble("Redirecting to support@greedygame.com for assistance.", "bot");
+      const link = document.createElement("a");
+      link.href = mailto;
+      link.textContent = "Open email";
+      link.className = "send";
+      link.target = "_blank";
+      const holder = document.createElement("div");
+      holder.style.marginTop = "8px";
+      holder.appendChild(link);
+      chatLog.appendChild(holder);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      window.location.href = mailto;
+      setSuggestions([
+        { text: "Try other available offers", onClick: showBrowseOffers },
+        { text: "End Chat", onClick: endChat }
+      ]);
+    }
+
+    function endChat() {
+      addBubble("Thanks for chatting 👋 Happy earning 💰🚀", "bot");
+      setSuggestions([]);
+      inputRow.classList.add("hidden");
+    }
+
+    function setOptionsForStatus(status) {
+      if (status === "Ongoing" || status === "Completed") {
+        setSuggestions([
+          { text: "I'm not able to complete the offer", onClick: showHelpOptions },
+          { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
+        ]);
+      } else if (status === "Expired") {
+        setSuggestions([
+          { text: "Check out other available offers", onClick: showBrowseOffers },
+          { text: "Report this issue to us", onClick: showReportIssue }
+        ]);
+      }
+    }
+    // Initialize with hidden (no offer selected); options appear after selection via setOptionsForStatus()
+    sendBtn.addEventListener("click", send);
+    msgInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
     function send() {
-      const msg = msgInput.value;
+      const msg = msgInput.value.trim();
       const offer = offerSelect.value;
-
       if (!msg) return;
-
-      const prefix = chat.textContent.length ? "\n\n" : "";
-      chat.textContent += `${prefix}You: ${msg}\n\nBot: `;
-      chat.scrollTop = chat.scrollHeight;
-
+      addBubble(msg, "user");
+      currentBotBubble = addBubble("", "bot");
       msgInput.value = "";
-
       if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({
-            message: msg,
-            offer_id: offer
-          }));
+        ws.send(JSON.stringify({ message: msg, offer_id: offer }));
       } else {
-          chat.textContent += "Error: No connection.\n\n";
+        addBubble("Error: No connection.", "bot");
       }
     }
   </script>
