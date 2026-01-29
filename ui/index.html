@@ -75,7 +75,9 @@
       height: 300px;
       overflow-y: auto;
       white-space: pre-wrap;
-      font-family: 'Courier New', monospace;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
       margin-top: 10px;
       border: 1px solid #ddd;
     }
@@ -121,7 +123,7 @@
 
     function connect() {
         // Use current host to determine WS URL, or hardcode for dev
-        <!-- ws = new WebSocket("ws://127.0.0.1:8000/ws"); -->
+        <!-- ws = new WebSocket("ws://127.0.0.1:8000/ws");  this is the original websocket url-->
         ws = new WebSocket("ws://10.0.2.2:8000/ws");
         
         ws.onopen = () => {
@@ -152,7 +154,8 @@
 
       if (!msg) return;
 
-      chat.textContent += `\nYou: ${msg}\nBot: `;
+      const prefix = chat.textContent.length ? "\n\n" : "";
+      chat.textContent += `${prefix}You: ${msg}\n\nBot: `;
       chat.scrollTop = chat.scrollHeight;
 
       msgInput.value = "";

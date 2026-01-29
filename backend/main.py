@@ -68,7 +68,7 @@ async def inactivity_monitor():
                 # If inactive for > 30 seconds and haven't alerted yet
                 if now - last > 30 and not manager.alerted.get(websocket, False):
                     # Send nudge
-                    nudge_msg = "\n\nBot: Are you still there? Let me know if you need more help!"
+                    nudge_msg = "\n\nBot: Still there? Reply if you need assistance."
                     await manager.send_message(nudge_msg, websocket)
                     manager.alerted[websocket] = True
             except Exception as e:
@@ -109,6 +109,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
 
     # 2. Get Offer Context (if applicable)
     offer_context_query = ""
+    offer = None
     if offer_id:
         offer = mock_offer_api.get_offer_details(offer_id)
         if offer:
@@ -150,6 +151,20 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     if filtered_response != response_buffer:
         # If filtering occurred, yield the filtered version
         yield "\n" + filtered_response
+    
+    if offer_id:
+        if not offer:
+            offer = mock_offer_api.get_offer_details(offer_id)
+        if offer and offer.get("user_status") == "EXPIRED":
+            recs = mock_offer_api.get_recommended_offers(exclude_offer_id=offer.get("offer_id"), limit=2)
+            if recs:
+                lines = []
+                for r in recs:
+                    title = r.get("title")
+                    mins = r.get("estimated_time_minutes")
+                    diff = r.get("difficulty")
+                    lines.append(f"- {title} (~{mins} min, {diff})")
+                yield "\n\nThis offer has expired. Recommended quick alternatives:\n" + "\n".join(lines)
 
 # -------------------------------------------------------------------------
 # Endpoints
@@ -198,6 +213,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Stream response back
             async for chunk in process_chat(user_msg, offer_id, client_ip):
                 await manager.send_message(chunk, websocket)
+            await manager.send_message("\n\n", websocket)
             
             # Update activity again after sending response
             manager.update_activity(websocket)
