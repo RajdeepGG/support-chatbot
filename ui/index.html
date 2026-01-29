@@ -148,6 +148,11 @@
 
     connect();
 
+    offerSelect.addEventListener("change", () => {
+      chat.textContent = "";
+      msgInput.value = "";
+    });
+
     function send() {
       const msg = msgInput.value;
       const offer = offerSelect.value;

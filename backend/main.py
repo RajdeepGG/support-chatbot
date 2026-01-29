@@ -59,7 +59,7 @@ manager = ConnectionManager()
 # Background task to check for inactivity
 async def inactivity_monitor():
     while True:
-        await asyncio.sleep(5)  # Check every 5 seconds
+        await asyncio.sleep(15)  # Check every 15 seconds
         now = time.time()
         # Create a copy to iterate safely as connections might close
         for websocket in list(manager.active_connections):
@@ -103,7 +103,12 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         yield "Rate limit exceeded. Please wait a moment before sending more messages."
         return
     
-    # 4. Determine Priority
+    # 4. Domain Guard: keep responses offer-related
+    if guard_rails.domain_guard.is_out_of_scope(user_msg):
+        yield "I can help with offer-related support. Please ask an offer-related question."
+        return
+    
+    # 5. Determine Priority
     priority_level = priority.determine_priority(user_msg)
     print(f"Priority: {priority_level}")
 
@@ -155,7 +160,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     if offer_id:
         if not offer:
             offer = mock_offer_api.get_offer_details(offer_id)
-        if offer and offer.get("user_status") == "EXPIRED":
+        if offer and offer.get("user_status") == "EXPIRED" and "expired" in (offer_context_query or "").lower():
             recs = mock_offer_api.get_recommended_offers(exclude_offer_id=offer.get("offer_id"), limit=2)
             if recs:
                 lines = []

@@ -119,9 +119,28 @@ class InputValidator:
         return False
 
 # -------------------------------------------------------------------------
+# Domain Guard (keep assistant within offer-support scope)
+# -------------------------------------------------------------------------
+
+class DomainGuard:
+    def __init__(self):
+        self.out_of_scope_patterns = [
+            r'(?i)\b(java|python|javascript|c\+\+|c#|golang|ruby|code|coding|program|compile|algorithm)\b',
+            r'(?i)\bmath|physics|chemistry|biology\b',
+            r'(?i)\btravel|hotel|flight|weather\b',
+        ]
+    
+    def is_out_of_scope(self, text: str) -> bool:
+        for pattern in self.out_of_scope_patterns:
+            if re.search(pattern, text):
+                return True
+        return False
+
+# -------------------------------------------------------------------------
 # Global Instances
 # -------------------------------------------------------------------------
 
 content_filter = ContentFilter()
 rate_limiter = RateLimiter(max_requests=15, time_window=60)  # 15 requests per minute
 input_validator = InputValidator()
+domain_guard = DomainGuard()
