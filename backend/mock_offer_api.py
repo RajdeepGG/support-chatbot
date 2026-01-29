@@ -3,7 +3,7 @@ MOCK_OFFERS_DB = {
         "offer_id": 925599,
         "title": "Woodblock Puzzle Game",
         "user_status": "COMPLETED",
-        "verification_status": "UNDER_VERIFICATION",
+        "verification_status": None,
         "estimated_time_minutes": 8,
         "difficulty": "easy"
     },

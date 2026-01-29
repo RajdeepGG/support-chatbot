@@ -8,7 +8,8 @@
     body { background: #f4f7f9; display: flex; justify-content: center; align-items: flex-start; padding: 24px 12px; }
     .app { width: 100%; max-width: 420px; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); overflow: hidden; }
     .header { background: #0b2c6a; color: #fff; padding: 16px; display: flex; align-items: center; gap: 12px; }
-    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #e5eefc; }
+    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #e5eefc; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .title { flex: 1; }
     .title .name { font-weight: 600; }
     .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; margin-top: 6px; }
@@ -17,26 +18,45 @@
     .badge.completed { background: #eaf1fd; color: #2c5ac7; }
     .badge.hidden { display: none; }
     .content { padding: 12px; }
-    .controls { display: flex; gap: 8px; margin-bottom: 12px; }
+    .controls { display: none; }
     select, input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #ccd3e0; font-size: 14px; }
     input:focus, select:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 4px rgba(74,144,226,.6); }
     .chat { background: #f7f8fb; border: 1px solid #e3e7ef; min-height: 320px; max-height: 60vh; border-radius: 12px; padding: 12px; overflow-y: auto; }
     .bubble { max-width: 85%; border-radius: 12px; padding: 10px 12px; margin: 8px 0; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     .bubble.user { margin-left: auto; background: #eaf1ff; color: #193b7a; }
     .bubble.bot { background: #fff; border: 1px solid #e4e8f2; }
+    .typing { display: inline-flex; align-items: center; gap: 6px; }
+    .typing .dot { width: 6px; height: 6px; background: #c6d0ea; border-radius: 50%; animation: dotPulse 1.2s infinite ease-in-out; }
+    .typing .dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse { 0% { opacity: 0.2; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } 100% { opacity: 0.2; transform: translateY(0); } }
     .suggest { display: flex; gap: 8px; margin-top: 10px; }
     .suggest button { flex: 1; background: #eef2fa; color: #1b2a4a; border: 1px solid #dbe1f0; border-radius: 12px; padding: 10px; font-size: 14px; }
     .inputRow { display: flex; gap: 8px; margin-top: 10px; }
     .send { padding: 10px 16px; background: #4a90e2; color: #fff; border: none; border-radius: 8px; }
     .footer { text-align: center; color: #6a7692; font-size: 13px; padding: 12px; }
     .hidden { display: none; }
+    .bubble.bot ul { margin: 6px 0 0 18px; padding: 0; }
+    .bubble.bot li { margin: 6px 0; }
+    .optionsBubble .title { font-weight: 600; margin-bottom: 8px; }
+    .optionBtn { width: 100%; text-align: left; background: #eef2fa; color: #1b2a4a; border: 1px solid #dbe1f0; border-radius: 16px; padding: 12px 14px; margin: 8px 0; font-size: 14px; }
+    .chip { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .offersList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .offerItem { display: flex; align-items: center; gap: 12px; background: #f7f8fb; border: 1px solid #e3e7ef; border-radius: 16px; padding: 10px 12px; }
+    .offerItem.selected { border-color: #4a90e2; box-shadow: 0 0 0 2px rgba(74,144,226,.15); }
+    .offerItem .icon { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: #e5eefc; }
+    .offerItem .icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .offerItem .titleTxt { flex: 1; font-weight: 600; color: #1b2a4a; }
+    .chip.ongoing { background: #ffefb3; color: #7a5c00; }
+    .chip.expired { background: #ffd7d7; color: #8a1d1d; }
+    .chip.completed { background: #c4f2ce; color: #0e6a2a; }
   </style>
 </head>
 <body>
 
   <div class="app">
     <div class="header">
-      <div class="avatar"></div>
+      <div class="avatar"><img id="offerIcon" alt="Offer icon"></div>
       <div class="title">
         <div class="name" id="offerName">Support</div>
         <div class="badge hidden" id="offerBadge"></div>
@@ -51,6 +71,7 @@
           <option value="333444">Carrom Pool: Disc Game</option>
         </select>
       </div>
+      <div id="offersList" class="offersList"></div>
       <div class="chat" id="chatLog"></div>
       <div class="suggest hidden" id="suggestRow">
         <button id="btnNotAble">I'm not able to complete the offer</button>
@@ -61,7 +82,7 @@
         <button class="send" id="sendBtn">Send</button>
       </div>
     </div>
-    <div class="footer">Select an option above to continue</div>
+    <div class="footer hidden" id="footerText">Select an option above to continue</div>
   </div>
 
   <script>
@@ -73,12 +94,29 @@
     const offerSelect = document.getElementById("offer");
     const offerName = document.getElementById("offerName");
     const offerBadge = document.getElementById("offerBadge");
+    const offerIcon = document.getElementById("offerIcon");
     const btnNotAble = document.getElementById("btnNotAble");
     const btnType = document.getElementById("btnType");
     const suggestRow = document.getElementById("suggestRow");
+    const footerText = document.getElementById("footerText");
+    let typingEl = null;
     let currentBotBubble = null;
     const statusById = { "925599": "Completed", "111222": "Ongoing", "333444": "Expired" };
     const badgeClassByStatus = { "Completed": "completed", "Ongoing": "ongoing", "Expired": "expired" };
+    const iconById = { "925599": "icons/woodblock.png", "111222": "icons/aquastar.png", "333444": "icons/carrom.png" };
+    const offersList = document.getElementById("offersList");
+
+    function placeholderIcon(title) {
+      const letter = (title || "S").trim().charAt(0).toUpperCase() || "S";
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='100%' height='100%' fill='#e5eefc'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='#193b7a' font-family='Segoe UI, Roboto, Arial'>${letter}</text></svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    function updateOfferIcon(id, title) {
+      const src = iconById[id] || placeholderIcon(title);
+      offerIcon.src = src;
+      offerIcon.onerror = () => { offerIcon.src = placeholderIcon(title); };
+    }
 
     function addBubble(text, who) {
       const b = document.createElement("div");
@@ -88,6 +126,26 @@
       chatLog.scrollTop = chatLog.scrollHeight;
       return b;
     }
+    function addBubbleHTML(html, who) {
+      const b = document.createElement("div");
+      b.className = "bubble " + who;
+      b.innerHTML = html;
+      chatLog.appendChild(b);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return b;
+    }
+    function showTypingIndicator() {
+      if (typingEl) return;
+      if (!currentBotBubble) return;
+      typingEl = document.createElement("span");
+      typingEl.className = "typing";
+      typingEl.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      currentBotBubble.appendChild(typingEl);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    function hideTypingIndicator() {
+      if (typingEl) { typingEl.remove(); typingEl = null; }
+    }
 
     function connect() {
       ws = new WebSocket("ws://10.0.2.2:8000/ws");
@@ -95,9 +153,11 @@
       ws.onmessage = (event) => {
         if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         if (event.data === "\n\n") {
+          hideTypingIndicator();
           currentBotBubble = null;
           return;
         }
+        hideTypingIndicator();
         currentBotBubble.textContent += event.data;
         chatLog.scrollTop = chatLog.scrollHeight;
       };
@@ -105,14 +165,19 @@
       ws.onerror = () => { addBubble("Error: Connection lost.", "bot"); };
     }
     connect();
+    offerIcon.src = placeholderIcon("Support");
+    renderOffersList();
 
     offerSelect.addEventListener("change", () => {
       chatLog.innerHTML = "";
       msgInput.value = "";
       inputRow.classList.add("hidden");
       suggestRow.classList.add("hidden");
+      footerText.classList.add("hidden");
+      hideTypingIndicator();
       const title = offerSelect.options[offerSelect.selectedIndex]?.text || "Support";
       offerName.textContent = title;
+      updateOfferIcon(offerSelect.value, title);
       if (!offerSelect.value) {
         offerBadge.textContent = "";
         offerBadge.className = "badge hidden";
@@ -120,7 +185,7 @@
         const status = statusById[offerSelect.value] || "Ongoing";
         offerBadge.textContent = status;
         offerBadge.className = "badge " + (badgeClassByStatus[status] || "ongoing");
-        suggestRow.classList.remove("hidden");
+        // Suggestions are rendered inside chat bubbles; keep external row hidden
         // Default guided messages per status
         if (status === "Ongoing") {
           addBubble("I see that you've started this offer! 🎯", "bot");
@@ -135,16 +200,36 @@
         // Set options per status
         setOptionsForStatus(status);
       }
+      updateFooterVisibility();
+      highlightSelectedOffer();
     });
 
-    function setSuggestions(items) {
-      suggestRow.innerHTML = "";
+    function updateFooterVisibility() { footerText.classList.add("hidden"); }
+
+    let currentOptionsContainer = null;
+    function setSuggestions(items, title = "What would you like to know?") {
+      if (currentOptionsContainer) { currentOptionsContainer.remove(); currentOptionsContainer = null; }
+      if (!items || items.length === 0) { updateFooterVisibility(); return; }
+      const wrap = document.createElement("div");
+      wrap.className = "optionsBubble";
+      const inner = document.createElement("div");
+      inner.className = "bubble bot";
+      const heading = document.createElement("div");
+      heading.className = "title";
+      heading.textContent = title;
+      inner.appendChild(heading);
       items.forEach(({ text, onClick }) => {
         const btn = document.createElement("button");
+        btn.className = "optionBtn";
         btn.textContent = text;
-        btn.onclick = () => { addBubble(text, "user"); onClick(); };
-        suggestRow.appendChild(btn);
+        btn.onclick = () => { addBubble(text, "user"); onClick(); inner.remove(); currentOptionsContainer = null; };
+        inner.appendChild(btn);
       });
+      wrap.appendChild(inner);
+      chatLog.appendChild(wrap);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      currentOptionsContainer = wrap;
+      updateFooterVisibility();
     }
 
     function showHelpOptions() {
@@ -173,13 +258,53 @@
 
     function showStepByStep() {
       addBubble("Step‑by‑step Instructions:", "bot");
-      addBubble("• Install the app\n• Use for 10+ minutes ⏳\n• Sign up with valid details 📝\n• Don’t uninstall 🚫", "bot");
+      addBubbleHTML("<ul><li>Install the app</li><li>Use for 10+ minutes ⏳</li><li>Sign up with valid details 📝</li><li>Don’t uninstall 🚫</li></ul>", "bot");
       setSuggestions([
         { text: "Check out other available offers", onClick: showBrowseOffers },
         { text: "Report this issue to us", onClick: showReportIssue }
       ]);
     }
 
+    function renderOffersList() {
+      offersList.innerHTML = "";
+      Array.from(offerSelect.options).forEach(o => {
+        if (!o.value) return;
+        const item = document.createElement("div");
+        item.className = "offerItem";
+        const iconWrap = document.createElement("div");
+        iconWrap.className = "icon";
+        const img = document.createElement("img");
+        img.src = iconById[o.value] || placeholderIcon(o.text);
+        img.onerror = () => { img.src = placeholderIcon(o.text); };
+        iconWrap.appendChild(img);
+        const title = document.createElement("div");
+        title.className = "titleTxt";
+        title.textContent = o.text;
+        const status = statusById[o.value] || "Ongoing";
+        const chip = document.createElement("div");
+        chip.className = "chip " + (badgeClassByStatus[status] || "ongoing");
+        chip.textContent = status;
+        item.appendChild(iconWrap);
+        item.appendChild(title);
+        item.appendChild(chip);
+        item.onclick = () => {
+          offerSelect.value = o.value;
+          offerSelect.dispatchEvent(new Event("change"));
+        };
+        offersList.appendChild(item);
+      });
+      highlightSelectedOffer();
+    }
+    function highlightSelectedOffer() {
+      Array.from(offersList.children).forEach(child => child.classList.remove("selected"));
+      const val = offerSelect.value;
+      if (!val) return;
+      const idx = Array.from(offerSelect.options).findIndex(o => o.value === val);
+      if (idx > -1) {
+        const el = offersList.children[idx - 1]; // skip the first 'Select Offer' option
+        if (el) el.classList.add("selected");
+      }
+    }
     function showBrowseOffers() {
       addBubble("Here are new offers 🎉 Click to get started:", "bot");
       const current = offerSelect.value;
@@ -228,9 +353,14 @@
     }
 
     function setOptionsForStatus(status) {
-      if (status === "Ongoing" || status === "Completed") {
+      if (status === "Ongoing") {
         setSuggestions([
           { text: "I'm not able to complete the offer", onClick: showHelpOptions },
+          { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
+        ]);
+      } else if (status === "Completed") {
+        setSuggestions([
+          { text: "Check out other available offers", onClick: showBrowseOffers },
           { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
         ]);
       } else if (status === "Expired") {
@@ -250,6 +380,7 @@
       if (!msg) return;
       addBubble(msg, "user");
       currentBotBubble = addBubble("", "bot");
+      showTypingIndicator();
       msgInput.value = "";
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ message: msg, offer_id: offer }));
