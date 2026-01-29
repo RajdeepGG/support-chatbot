@@ -121,7 +121,8 @@
 
     function connect() {
         // Use current host to determine WS URL, or hardcode for dev
-        ws = new WebSocket("ws://127.0.0.1:8000/ws");
+        <!-- ws = new WebSocket("ws://127.0.0.1:8000/ws"); -->
+        ws = new WebSocket("ws://10.0.2.2:8000/ws");
         
         ws.onopen = () => {
             console.log("Connected to WebSocket");
