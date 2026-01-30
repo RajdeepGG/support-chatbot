@@ -50,6 +50,11 @@
     .chip.ongoing { background: #ffefb3; color: #7a5c00; }
     .chip.expired { background: #ffd7d7; color: #8a1d1d; }
     .chip.completed { background: #c4f2ce; color: #0e6a2a; }
+    .videoOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .videoOverlay.show { display: flex; }
+    .videoBox { width: 100%; max-width: 420px; background: #000; border-radius: 12px; padding: 8px; }
+    .videoBox video { width: 100%; height: auto; border-radius: 8px; display: block; }
+    .videoActions { display: flex; justify-content: flex-end; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -84,6 +89,14 @@
     </div>
     <div class="footer hidden" id="footerText">Select an option above to continue</div>
   </div>
+  <div id="videoOverlay" class="videoOverlay">
+    <div class="videoBox">
+      <video id="guideVideo" controls playsinline preload="metadata"></video>
+      <div class="videoActions">
+        <button class="send" id="closeVideoBtn">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     let ws;
@@ -105,6 +118,10 @@
     const badgeClassByStatus = { "Completed": "completed", "Ongoing": "ongoing", "Expired": "expired" };
     const iconById = { "925599": "icons/woodblock.png", "111222": "icons/aquastar.png", "333444": "icons/carrom.png" };
     const offersList = document.getElementById("offersList");
+    const videoOverlay = document.getElementById("videoOverlay");
+    const guideVideo = document.getElementById("guideVideo");
+    const closeVideoBtn = document.getElementById("closeVideoBtn");
+    const guideById = { "925599": "videos/tutorial.mp4", "111222": "videos/tutorial.mp4", "333444": "videos/tutorial.mp4" };
 
     function placeholderIcon(title) {
       const letter = (title || "S").trim().charAt(0).toUpperCase() || "S";
@@ -246,8 +263,9 @@
       btn.className = "send";
       btn.textContent = "Watch now";
       btn.onclick = () => {
-        addBubble("Happy earning 💰🚀", "bot");
-        setSuggestions([]);
+        const current = offerSelect.value;
+        const src = guideById[current] || "videos/walkthrough.mp4";
+        openGuideVideo(src);
       };
       const holder = document.createElement("div");
       holder.style.marginTop = "8px";
@@ -356,6 +374,42 @@
         }
       } catch (e) {}
     }
+    function getMimeType(src) {
+      const ext = (src.split(".").pop() || "").toLowerCase();
+      if (ext === "mp4") return "video/mp4";
+      if (ext === "webm") return "video/webm";
+      if (ext === "mov") return "video/quicktime";
+      return "video/mp4";
+    }
+    function openGuideVideo(src) {
+      guideVideo.innerHTML = "";
+      const source = document.createElement("source");
+      source.src = src;
+      source.type = getMimeType(src);
+      guideVideo.appendChild(source);
+      videoOverlay.classList.add("show");
+      guideVideo.load();
+      guideVideo.onloadedmetadata = () => {
+        guideVideo.play().catch(() => {});
+      };
+      guideVideo.onerror = () => {
+        closeGuideVideo();
+        addBubble("Unable to load video. Opening in a new tab…", "bot");
+        try { window.open(src, "_blank"); } catch (e) {}
+      };
+      guideVideo.onended = () => {
+        closeGuideVideo();
+        addBubble("Happy earning 💰🚀", "bot");
+        setSuggestions([]);
+      };
+    }
+    function closeGuideVideo() {
+      guideVideo.pause();
+      guideVideo.currentTime = 0;
+      guideVideo.innerHTML = "";
+      videoOverlay.classList.remove("show");
+    }
+    closeVideoBtn.onclick = closeGuideVideo;
 
     function setOptionsForStatus(status) {
       if (status === "Ongoing") {
