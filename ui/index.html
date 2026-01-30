@@ -78,7 +78,7 @@
         <button id="btnType">I'd rather type out my issue</button>
       </div>
       <div class="inputRow hidden" id="inputRow">
-        <input id="msg" placeholder="Type your message" />
+        <input id="msg" placeholder="Type your query" />
         <button class="send" id="sendBtn">Send</button>
       </div>
     </div>
@@ -191,8 +191,8 @@
           addBubble("I see that you've started this offer! 🎯", "bot");
           addBubble("Advertisers typically take 24–48 hours to verify your task and process rewards. Please continue using the app/game for 20–30 minutes. 🎮", "bot");
         } else if (status === "Completed") {
-          addBubble("Your offer is under verification. This typically takes 24–48 hours.", "bot");
-          addBubble("You can explore other offers or type your issue if you need help.", "bot");
+          addBubble("Your offer is already completed. Please check your wallet.", "bot");
+          addBubble("You can explore other available offers.", "bot");
         } else if (status === "Expired") {
           addBubble("This offer has expired.", "bot");
           addBubble("You can try other available offers or type your issue for assistance.", "bot");
@@ -350,6 +350,11 @@
       addBubble("Thanks for chatting 👋 Happy earning 💰🚀", "bot");
       setSuggestions([]);
       inputRow.classList.add("hidden");
+      try {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ event: "end_chat" }));
+        }
+      } catch (e) {}
     }
 
     function setOptionsForStatus(status) {
@@ -360,13 +365,11 @@
         ]);
       } else if (status === "Completed") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers },
-          { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
+          { text: "Check out other available offers", onClick: showBrowseOffers }
         ]);
       } else if (status === "Expired") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers },
-          { text: "Report this issue to us", onClick: showReportIssue }
+          { text: "Check out other available offers", onClick: showBrowseOffers }
         ]);
       }
     }

@@ -33,10 +33,12 @@ class ConnectionManager:
         self.active_connections: List[WebSocket] = []
         self.last_activity: Dict[WebSocket, float] = {}
         self.alerted: Dict[WebSocket, bool] = {}
+        self.nudge_enabled: Dict[WebSocket, bool] = {}
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
+        self.nudge_enabled[websocket] = True
         self.update_activity(websocket)
 
     def disconnect(self, websocket: WebSocket):
@@ -46,6 +48,8 @@ class ConnectionManager:
             del self.last_activity[websocket]
         if websocket in self.alerted:
             del self.alerted[websocket]
+        if websocket in self.nudge_enabled:
+            del self.nudge_enabled[websocket]
 
     async def send_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
@@ -66,7 +70,7 @@ async def inactivity_monitor():
             try:
                 last = manager.last_activity.get(websocket, now)
                 # If inactive for > 30 seconds and haven't alerted yet
-                if now - last > 30 and not manager.alerted.get(websocket, False):
+                if now - last > 30 and manager.nudge_enabled.get(websocket, True) and not manager.alerted.get(websocket, False):
                     # Send nudge
                     nudge_msg = "\n\nStill there? Reply if you need assistance."
                     await manager.send_message(nudge_msg, websocket)
@@ -208,9 +212,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 payload = json.loads(data)
                 user_msg = payload.get("message", "")
                 offer_id = payload.get("offer_id")
+                event = payload.get("event")
             except json.JSONDecodeError:
                 user_msg = data
                 offer_id = None
+                event = None
+            
+            if event == "end_chat":
+                manager.nudge_enabled[websocket] = False
+                await manager.send_message("\n\n", websocket)
+                manager.update_activity(websocket)
+                continue
             
             if not user_msg:
                 continue
@@ -222,6 +234,12 @@ async def websocket_endpoint(websocket: WebSocket):
             
             # Update activity again after sending response
             manager.update_activity(websocket)
+            
+            norm = user_msg.strip().lower()
+            if any(p in norm for p in ["thanks", "thank you", "resolved", "clear now", "no more", "that helps", "issue resolved"]):
+                manager.nudge_enabled[websocket] = False
+            else:
+                manager.nudge_enabled[websocket] = True
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
