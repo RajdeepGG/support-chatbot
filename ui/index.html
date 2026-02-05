@@ -183,7 +183,9 @@
       ws.onclose = () => { setTimeout(connect, 3000); };
       ws.onerror = () => { addBubble("Error: Connection lost.", "bot"); };
     }
-    connect();
+    // In decision-tree-only (lite) phase, avoid auto-connecting WebSocket.
+    // Uncomment the next line when enabling typed chat again.
+    // connect();
     offerIcon.src = placeholderIcon("Support");
     renderOffersList();
 
