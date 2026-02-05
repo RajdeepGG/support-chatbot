@@ -1,18 +1,26 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import asyncio
 import time
 import json
-import rag
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 import priority
 import sla
 import offer_logic
-import llm
 import mock_offer_api
 import guard_rails
+CHAT_MODE = os.getenv("CHAT_MODE", "full")
+if CHAT_MODE != "decision_tree":
+    import rag
+    import llm
+else:
+    rag = None
+    llm = None
 
 app = FastAPI()
 
@@ -23,6 +31,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+UI_DIR = str(Path(__file__).resolve().parent.parent / "ui")
+app.mount("/ui", StaticFiles(directory=UI_DIR, html=True), name="ui")
+app.mount("/icons", StaticFiles(directory=Path(UI_DIR) / "icons"), name="icons")
+app.mount("/videos", StaticFiles(directory=Path(UI_DIR) / "videos"), name="videos")
+
+@app.get("/")
+async def root_page():
+    return FileResponse(Path(UI_DIR) / "index.html")
+
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(status_code=204)
 
 # -------------------------------------------------------------------------
 # WebSocket Connection Manager with Inactivity Monitoring
@@ -82,7 +102,8 @@ async def inactivity_monitor():
 @app.on_event("startup")
 async def startup_event():
     print("Loading knowledge base...")
-    rag.load_docs()
+    if rag:
+        rag.load_docs()
     # Start the background monitor
     asyncio.create_task(inactivity_monitor())
 
@@ -110,6 +131,10 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     # 4. Domain Guard: keep responses offer-related
     if guard_rails.domain_guard.is_out_of_scope(user_msg):
         yield "I can help with offer-related support. Please ask an offer-related question."
+        return
+    
+    if CHAT_MODE == "decision_tree":
+        yield "Please use the options above to continue."
         return
     
     # 5. Determine Priority
@@ -217,6 +242,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_msg = data
                 offer_id = None
                 event = None
+            
+            if event == "clear_chat":
+                manager.nudge_enabled[websocket] = True
+                await manager.send_message("\n\n", websocket)
+                manager.update_activity(websocket)
+                continue
             
             if event == "end_chat":
                 manager.nudge_enabled[websocket] = False

@@ -80,7 +80,6 @@
       <div class="chat" id="chatLog"></div>
       <div class="suggest hidden" id="suggestRow">
         <button id="btnNotAble">I'm not able to complete the offer</button>
-        <button id="btnType">I'd rather type out my issue</button>
       </div>
       <div class="inputRow hidden" id="inputRow">
         <input id="msg" placeholder="Type your query" />
@@ -109,7 +108,6 @@
     const offerBadge = document.getElementById("offerBadge");
     const offerIcon = document.getElementById("offerIcon");
     const btnNotAble = document.getElementById("btnNotAble");
-    const btnType = document.getElementById("btnType");
     const suggestRow = document.getElementById("suggestRow");
     const footerText = document.getElementById("footerText");
     let typingEl = null;
@@ -414,8 +412,7 @@
     function setOptionsForStatus(status) {
       if (status === "Ongoing") {
         setSuggestions([
-          { text: "I'm not able to complete the offer", onClick: showHelpOptions },
-          { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
+          { text: "I'm not able to complete the offer", onClick: showHelpOptions }
         ]);
       } else if (status === "Completed") {
         setSuggestions([
