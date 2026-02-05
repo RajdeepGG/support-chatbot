@@ -163,7 +163,11 @@
     }
 
     function connect() {
-      ws = new WebSocket("ws://10.0.2.2:8000/ws");
+      const PROD_WS_HOST = "support-chatbot-1.onrender.com";
+      const isHttps = location.protocol === "https:";
+      const host = isHttps ? PROD_WS_HOST : "10.0.2.2:8000";
+      const url = (isHttps ? "wss://" : "ws://") + host + "/ws";
+      ws = new WebSocket(url);
       ws.onopen = () => {};
       ws.onmessage = (event) => {
         if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
