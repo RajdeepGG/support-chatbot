@@ -121,6 +121,34 @@
     const closeVideoBtn = document.getElementById("closeVideoBtn");
     const guideById = { "925599": "videos/tutorial.mp4", "111222": "videos/tutorial.mp4", "333444": "videos/tutorial.mp4" };
 
+    function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
+      if (!offerId) return;
+      const label = offerName || "Support";
+      statusById[offerId] = status || "Ongoing";
+      if (offerIconUrl) iconById[offerId] = offerIconUrl;
+      offerSelect.innerHTML = `<option value="">Select Offer</option><option value="${offerId}">${label}</option>`;
+      offerName.textContent = label;
+      updateOfferIcon(offerId, label);
+      offerSelect.value = offerId;
+      renderOffersList();
+      offerSelect.dispatchEvent(new Event("change"));
+    }
+    function applyOfferFromParams() {
+      const qp = new URLSearchParams(location.search);
+      const offerId = qp.get("offerId");
+      const offerName = qp.get("offerName");
+      const offerIconUrl = qp.get("offerIconUrl");
+      const status = qp.get("status") || "Ongoing";
+      if (!offerId) return;
+      setOfferFromData({ offerId, offerName, offerIconUrl, status });
+    }
+    window.addEventListener("popstate", applyOfferFromParams);
+    window.addEventListener("hashchange", applyOfferFromParams);
+    window.addEventListener("message", (e) => {
+      const d = e.data;
+      if (d && d.type === "setOffer" && d.payload) setOfferFromData(d.payload);
+    });
+
     function placeholderIcon(title) {
       const letter = (title || "S").trim().charAt(0).toUpperCase() || "S";
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='100%' height='100%' fill='#e5eefc'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='#193b7a' font-family='Segoe UI, Roboto, Arial'>${letter}</text></svg>`;
@@ -187,6 +215,7 @@
     // Uncomment the next line when enabling typed chat again.
     // connect();
     offerIcon.src = placeholderIcon("Support");
+    applyOfferFromParams();
     renderOffersList();
 
     offerSelect.addEventListener("change", () => {
@@ -216,7 +245,7 @@
           addBubble("You can explore other available offers.", "bot");
         } else if (status === "Expired") {
           addBubble("This offer has expired.", "bot");
-          addBubble("You can try other available offers or type your issue for assistance.", "bot");
+          addBubble("You can try other available offers.", "bot");
         }
         // Set options per status
         setOptionsForStatus(status);
