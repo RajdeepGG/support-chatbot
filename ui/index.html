@@ -58,8 +58,12 @@
     .videoOverlay.show { display: flex; }
     .videoBox { width: 100%; max-width: 440px; background: #000; border-radius: 16px; padding: 8px; position: relative; padding-bottom: 96px; }
     .videoBox video { width: 100%; height: auto; border-radius: 8px; display: block; }
-    .videoFooter { position: absolute; left: 8px; right: 8px; bottom: 12px; display: flex; justify-content: flex-end; gap: 8px; }
-    .videoCloseTop { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 999px; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 22px; display: flex; align-items: center; justify-content: center; z-index: 1002; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+    .videoFooter { position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 12px); display: flex; justify-content: flex-end; gap: 8px; }
+    .videoCloseTop { position: absolute; top: calc(env(safe-area-inset-top) + 12px); right: 12px; width: 44px; height: 44px; border-radius: 999px; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 22px; display: flex; align-items: center; justify-content: center; z-index: 1002; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+    .emptyState { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #1b2a4a; }
+    .emptyIcon { font-size: 28px; }
+    .emptyTitle { font-weight: 700; }
+    .emptyDesc { font-size: 14px; color: #6a7692; max-width: 320px; text-align: center; }
   </style>
 </head>
 <body>
@@ -224,6 +228,7 @@
     offerIcon.src = placeholderIcon("Support");
     applyOfferFromParams();
     renderOffersList();
+    if (!offerSelect.value) renderEmptyState();
 
     offerSelect.addEventListener("change", () => {
       chatLog.innerHTML = "";
@@ -238,6 +243,7 @@
       if (!offerSelect.value) {
         offerBadge.textContent = "";
         offerBadge.className = "badge hidden";
+        renderEmptyState();
       } else {
         const status = statusById[offerSelect.value] || "Ongoing";
         offerBadge.textContent = status;
@@ -262,6 +268,29 @@
     });
 
     function updateFooterVisibility() { footerText.classList.add("hidden"); }
+    function renderEmptyState() {
+      chatLog.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "emptyState";
+      const icon = document.createElement("div");
+      icon.className = "emptyIcon";
+      icon.textContent = "🧩";
+      const title = document.createElement("div");
+      title.className = "emptyTitle";
+      title.textContent = "Select an offer to get help";
+      const desc = document.createElement("div");
+      desc.className = "emptyDesc";
+      desc.textContent = "Choose an offer above to see quick steps and a short video guide.";
+      const btn = document.createElement("button");
+      btn.className = "send";
+      btn.textContent = "Browse offers";
+      btn.onclick = () => {};
+      wrap.appendChild(icon);
+      wrap.appendChild(title);
+      wrap.appendChild(desc);
+      wrap.appendChild(btn);
+      chatLog.appendChild(wrap);
+    }
 
     let currentOptionsContainer = null;
     function setSuggestions(items, title = "What would you like to know?") {
