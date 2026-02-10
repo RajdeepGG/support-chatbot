@@ -134,15 +134,13 @@
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
-      const label = offerName || "Support";
+      const label = offerName || "Offer";
       statusById[offerId] = status || "Ongoing";
       if (offerIconUrl) iconById[offerId] = offerIconUrl;
       offerSelect.innerHTML = `<option value="">Select Offer</option><option value="${offerId}">${label}</option>`;
-      offerName.textContent = label;
-      updateOfferIcon(offerId, label);
-      offerSelect.value = offerId;
       renderOffersList();
-      offerSelect.dispatchEvent(new Event("change"));
+      highlightSelectedOffer();
+      if (!offerSelect.value) { renderEmptyState(); }
     }
     function applyOfferFromParams() {
       const qp = new URLSearchParams(location.search);
@@ -284,14 +282,9 @@
       const desc = document.createElement("div");
       desc.className = "emptyDesc";
       desc.textContent = "Choose an offer above to see quick steps and a short video guide.";
-      const btn = document.createElement("button");
-      btn.className = "send";
-      btn.textContent = "Browse offers";
-      btn.onclick = () => {};
       wrap.appendChild(icon);
       wrap.appendChild(title);
       wrap.appendChild(desc);
-      wrap.appendChild(btn);
       chatLog.appendChild(wrap);
     }
 
