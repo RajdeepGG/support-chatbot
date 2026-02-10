@@ -357,20 +357,8 @@
       }
     }
     function showBrowseOffers() {
-      addBubble("Here are new offers 🎉 Click to get started:", "bot");
-      const current = offerSelect.value;
-      const options = Array.from(offerSelect.options)
-        .filter(o => o.value && o.value !== current)
-        .slice(0, 2);
-      setSuggestions(options.map(o => ({
-        text: o.text,
-        onClick: () => {
-          offerSelect.value = o.value;
-          offerSelect.dispatchEvent(new Event("change"));
-          addBubble("Happy earning 💰🚀", "bot");
-          setSuggestions([]);
-        }
-      })));
+      addBubble("navigate to offers screen to check other available offers", "bot");
+      setSuggestions([]);
     }
 
     function showReportIssue() {
