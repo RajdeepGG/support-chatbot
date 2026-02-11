@@ -131,6 +131,8 @@
     const closeVideoBtn = document.getElementById("closeVideoBtn");
     const closeVideoTop = document.getElementById("closeVideoTop");
     const guideById = { "925599": "videos/tutorial.mp4", "111222": "videos/tutorial.mp4", "333444": "videos/tutorial.mp4" };
+    const LLM_ENABLED = new URLSearchParams(location.search).get("llm") === "1";
+    const WS_HOST_PARAM = new URLSearchParams(location.search).get("wsHost");
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
@@ -203,9 +205,9 @@
     }
 
     function connect() {
-      const PROD_WS_HOST = "support-chatbot-1.onrender.com";
       const isHttps = location.protocol === "https:";
-      const host = isHttps ? PROD_WS_HOST : "10.0.2.2:8000";
+      const defaultHost = isHttps ? "support-chatbot-1.onrender.com" : "localhost:8000";
+      const host = WS_HOST_PARAM || defaultHost;
       const url = (isHttps ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
       ws.onopen = () => {};
@@ -223,13 +225,11 @@
       ws.onclose = () => { setTimeout(connect, 3000); };
       ws.onerror = () => { addBubble("Error: Connection lost.", "bot"); };
     }
-    // In decision-tree-only (lite) phase, avoid auto-connecting WebSocket.
-    // Uncomment the next line when enabling typed chat again.
-    // connect();
     offerIcon.src = aiSupportIcon();
     applyOfferFromParams();
     renderOffersList();
     if (!offerSelect.value) renderEmptyState();
+    if (LLM_ENABLED) { try { connect(); } catch (e) {} }
 
     offerSelect.addEventListener("change", () => {
       chatLog.innerHTML = "";
@@ -318,7 +318,8 @@
       addBubble("Let’s get you back on track. Choose an option:", "bot");
       setSuggestions([
         { text: "Watch 2‑min guide", onClick: showWatchGuide },
-        { text: "View step‑by‑step instructions", onClick: showStepByStep }
+        { text: "View step‑by‑step instructions", onClick: showStepByStep },
+        { text: "I’d rather type out my issue", onClick: showTypeIssue }
       ]);
     }
 
@@ -468,15 +469,18 @@
     function setOptionsForStatus(status) {
       if (status === "Ongoing") {
         setSuggestions([
-          { text: "I'm not able to complete the offer", onClick: showHelpOptions }
+          { text: "I'm not able to complete the offer", onClick: showHelpOptions },
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       } else if (status === "Completed") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers }
+          { text: "Check out other available offers", onClick: showBrowseOffers },
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       } else if (status === "Expired") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers }
+          { text: "Check out other available offers", onClick: showBrowseOffers },
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       }
     }
@@ -497,6 +501,15 @@
       } else {
         addBubble("Error: No connection.", "bot");
       }
+    }
+
+    function showTypeIssue() {
+      addBubble("Type your message below.", "bot");
+      if (LLM_ENABLED && (!ws || ws.readyState !== WebSocket.OPEN)) {
+        try { connect(); } catch (e) {}
+      }
+      inputRow.classList.remove("hidden");
+      msgInput.focus();
     }
   </script>
 
