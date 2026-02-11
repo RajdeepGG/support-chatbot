@@ -333,6 +333,7 @@
         const current = offerSelect.value;
         const src = guideById[current] || "videos/tutorial.mp4";
         openGuideVideo(src);
+        endChat();
       };
       const holder = document.createElement("div");
       holder.style.marginTop = "8px";
@@ -392,7 +393,7 @@
     }
     function showBrowseOffers() {
       addBubble("Navigate to offers screen to check other available offers", "bot");
-      setSuggestions([]);
+      endChat();
     }
 
     function showReportIssue() {
@@ -462,8 +463,7 @@
       };
       guideVideo.onended = () => {
         closeGuideVideo();
-        addBubble("Happy earning 💰🚀", "bot");
-        setSuggestions([]);
+        endChat();
       };
     }
     function closeGuideVideo() {
