@@ -64,6 +64,7 @@
     .emptyIcon { font-size: 28px; }
     .emptyTitle { font-weight: 700; }
     .emptyDesc { font-size: 14px; color: #9aa8c9; max-width: 320px; text-align: center; }
+    .chatEnded { display: inline-block; margin: 16px auto 4px; padding: 10px 14px; border-radius: 999px; background: #2a3856; color: #9aa8c9; border: 1px solid #34415f; }
   </style>
 </head>
 <body>
@@ -419,7 +420,15 @@
     }
 
     function endChat() {
-      addBubble("Thanks for chatting 👋 Happy earning 💰🚀", "bot");
+      addBubble("Happy earning with Sikka! 💰🚀", "bot");
+      const pill = document.createElement("div");
+      pill.className = "chatEnded";
+      pill.textContent = "The chat has been ended";
+      const holder = document.createElement("div");
+      holder.style.display = "flex";
+      holder.style.justifyContent = "center";
+      holder.appendChild(pill);
+      chatLog.appendChild(holder);
       setSuggestions([]);
       inputRow.classList.add("hidden");
       try {
