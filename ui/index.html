@@ -207,7 +207,7 @@
 
     function connect() {
       const isHttps = location.protocol === "https:";
-      const defaultHost = isHttps ? "support-chatbot-1.onrender.com" : "localhost:8000";
+      const defaultHost = isHttps ? location.host : "localhost:8000";
       const host = WS_HOST_PARAM || defaultHost;
       const url = (isHttps ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
