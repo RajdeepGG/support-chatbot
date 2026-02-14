@@ -209,7 +209,8 @@
       const isHttps = location.protocol === "https:";
       const defaultHost = isHttps ? location.host : "localhost:8000";
       const host = WS_HOST_PARAM || defaultHost;
-      const url = (isHttps ? "wss://" : "ws://") + host + "/ws";
+      const useSecure = isHttps || (WS_HOST_PARAM && !/^localhost(:\d+)?$/.test(host));
+      const url = (useSecure ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
       ws.onopen = () => {};
       ws.onmessage = (event) => {
