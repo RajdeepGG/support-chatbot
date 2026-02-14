@@ -2,8 +2,8 @@ import requests
 import json
 import os
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
-MODEL_NAME = os.getenv("MODEL_NAME", "llama3:latest")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "https://phi-1052636139195.europe-west1.run.app/api/generate")
+MODEL_NAME = os.getenv("MODEL_NAME", "phi:latest")
 
 def ask_llm(prompt):
     payload = {
