@@ -164,12 +164,22 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         return
 
     # 6. Generate Response with LLM
-    context_str = "\n\n".join(docs)
+    def _clean_context(d: str) -> str:
+        lines = []
+        for ln in (d or "").splitlines():
+            if ln.strip().lower().startswith("keywords:"):
+                continue
+            lines.append(ln)
+        return "\n".join(lines).strip()
+    context_docs = [ _clean_context(d) for d in docs[:2] ]
+    context_str = "\n\n".join(context_docs)
     
     system_prompt = (
-        "You are a helpful offer-support assistant. Use ONLY the provided context. "
+        "You are a helpful offer-support assistant. Use ONLY the provided context to answer. "
         "If the answer is not in the context, say you don't know. "
-        "Answer in 2–4 short sentences or 3–5 concise bullets. Avoid repetition. "
+        "Respond in the user's language when possible. "
+        "Keep answers brief: max 80 words, or 3–5 concise bullets. "
+        "Do not repeat sentences, do not invent examples, tables, or stories. "
         "Prefer clear, actionable guidance (e.g., typical verification window is 24–48 hours). "
         "Never include sensitive information or discuss illegal activities. "
         "If asked about sensitive topics, politely decline and suggest contacting support."
