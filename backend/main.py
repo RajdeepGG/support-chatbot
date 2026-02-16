@@ -80,6 +80,9 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# Track per-connection active generation task to allow cancellation on new messages
+client_tasks: Dict[WebSocket, asyncio.Task] = {}
+
 # Background task to check for inactivity
 async def inactivity_monitor():
     while True:
@@ -262,10 +265,23 @@ async def websocket_endpoint(websocket: WebSocket):
             if not user_msg:
                 continue
 
-            # Stream response back
-            async for chunk in process_chat(user_msg, offer_id, client_ip):
-                await manager.send_message(chunk, websocket)
-            await manager.send_message("\n\n", websocket)
+            # Cancel previous generation for this socket, if any
+            prev = client_tasks.get(websocket)
+            if prev and not prev.done():
+                prev.cancel()
+                try:
+                    await prev
+                except Exception:
+                    pass
+
+            async def stream_to_ws():
+                async for chunk in process_chat(user_msg, offer_id, client_ip):
+                    await manager.send_message(chunk, websocket)
+                await manager.send_message("\n\n", websocket)
+
+            task = asyncio.create_task(stream_to_ws())
+            client_tasks[websocket] = task
+            # Do not await here; allow next user message to preempt this one
             
             # Update activity again after sending response
             manager.update_activity(websocket)
@@ -277,4 +293,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 manager.nudge_enabled[websocket] = True
             
     except WebSocketDisconnect:
+        # Cleanup active task on disconnect
+        prev = client_tasks.get(websocket)
+        if prev and not prev.done():
+            prev.cancel()
+            try:
+                await prev
+            except Exception:
+                pass
+        if websocket in client_tasks:
+            del client_tasks[websocket]
         manager.disconnect(websocket)
