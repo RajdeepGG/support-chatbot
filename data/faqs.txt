@@ -1,140 +1,79 @@
-General FAQs
+Q: When will I be rewarded?
+Q: Reward not received yet
+Q: Why I am not getting reward?
+Q: After completing the task, points are not credited
+A:
+- Advertisers verify your completion before releasing rewards.
+- This usually takes 24–48 hours; some offers may take longer.
+- Keep the app/game installed and active during this window.
+- If it exceeds 48 hours, contact support with screenshots.
+Keywords: reward, wallet, pending, verification, 24-48 hours, not received
 
-Q: I did not get my reward.
-A: Please check if the offer status is "Verified" or "Completed". If it is still pending or under verification, wait for the specified time. Tip: Meanwhile, we suggest you not to uninstall the app and try out other offers.
 
-Q: Why is my offer status under “verification”
-A: You should wait for 24 - 48 hours. After completing the offer, advertisers verify the offer compilation. Usually, the verification time is 48 - 72 hours.
+Q: Offer shows “Pending” or “Under verification”
+Q: All tasks are completed but verification is pending
+Q: Task completed but progress not updated
+A:
+- “Pending/Under verification” means the advertiser is reviewing your activity.
+- Typical verification window is 24–48 hours after completing all steps.
+- Do not uninstall the app; continue normal usage for 20–30 minutes.
+- If pending beyond 48 hours, reach out to support with proof.
+Keywords: pending, under verification, verify, delay, timeline
 
-Q: Why offer status show as “expired.”
-A: Rewards will not be credited if the offer criteria and rules are not met, if the app/offer is uninstalled immediately after offer completion, or if the advertiser is unable to track the offer completion.
 
+Q: Why does my offer show “Expired”?
 Q: What can I do after my offer expires?
-A: Once an offer expires, rewards cannot be credited. You can explore other similar active offers in the app and continue earning rewards.
+A:
+- Rewards cannot be credited once an offer expires.
+- Common causes: steps not completed, uninstalled too soon, tracking lost, or rules not met.
+- You can try other active offers shown in the app.
+Keywords: expired, no reward, rules, tracking, uninstall
 
-Q: What is the Pending status shown on my offer?
-A: Pending status means the advertiser is verifying the offer completion, and this process is usually completed within 24 48 hours. Tip: Meanwhile, we suggest you not to uninstall the app and try out other offers.
 
-Q: I did not get my Gift card ( Gift card purchased successfully, but the user has not received the gift card email).
-A: The gift card email may be delivered to your Spam/Junk folder, so please check there as well. If you still haven’t received it, contact the merchant directly at XOXODAY by emailing cs@xoxoday.com
+Q: What is an “Ongoing” offer?
+A:
+- “Ongoing” means some steps are still incomplete.
+- Open the offer and follow the remaining steps to finish.
+Keywords: ongoing, partial, incomplete, progress
 
-Q: I withdrew from my account, but I did not get my money.
-A: The transfer usually happens instantly, but the bank may take up to 72 hours or more to process the payment from their side, depending on the circumstances.
 
-Q: When will the Rewards be added to my wallet?
-A: The rewards will be credited to your account once advertisers verify that you have completed all the steps mentioned in the offer.
+Q: I redeemed a gift card but didn’t receive the email
+A:
+- Check your Spam/Junk folder for the gift card email.
+- If still missing, contact XOXODAY support at cs@xoxoday.com.
+Keywords: gift card, redemption, email, xoxoday, not received
 
-Q: What is an Ongoing Offer?
-A: An Ongoing Offer is one you have completed partially, i.e., where you have not completed all the steps and are still in completion progress.
+
+Q: UPI/bank withdrawal not received
+Q: Money not transferred to bank
+A:
+- Payouts are usually instant, but banks can take up to 72 hours.
+- Verify your UPI ID/account details are correct.
+- Check bank/UPI app notifications for pending/failed status.
+- If pending beyond 72 hours, contact support.
+Keywords: withdrawal, UPI, bank transfer, delay, 72 hours
+
+
+Q: Account is on hold / blocked
+Q: withdrawal kyu nahi ho raha, account hold
+A:
+- Accounts may be held if policy violations are detected.
+- Do not use VPNs, proxies, automation tools, or third‑party scripts to complete offers.
+- Disable such tools and use your real device/network.
+Keywords: account hold, blocked, vpn, policy, violation
+
 
 Q: When will I get the referral reward?
-A: Your friend must enter your referral code during signup. Once they complete three offers, both of you receive rewards, and you earn a bonus worth 50% of what your friend earns from those offers.
+A:
+- Your friend must enter your referral code during signup.
+- After they complete three offers, both of you receive rewards.
+- You receive a bonus worth 50% of what your friend earns from those offers.
+Keywords: referral, code, bonus, three offers
 
-Q: How long will it take to transfer money from Sikka to my bank account?
-A: The transfer usually happens instantly, but the bank may take up to 72 hours or more to process the payment from their side, depending on the circumstances.
-
-Q: What are some reasons my money is not getting transferred to my bank account?
-A: You may have entered the wrong UPI-ID
 
 Q: What is “Avg Reward Time”?
-A: “Avg Reward Time” shows the estimated time to receive a reward based on other users’ experience. The actual time may vary depending on offer rules and verification. If the reward isn’t credited after 72 hours, you can contact support.
-
-Q: I redeemed my rewards, and I did not get my money.
-A: If you redeemed coins for a gift card, please check your Spam/Junk folder or contact the merchant XOXODAY at cs@xoxoday.com . For UPI redemptions, payments are usually instant, but in some cases, the bank may take up to 72 hours or more to process the transaction.
-
-Q: Is your App Fake?
-A: No, our app is genuine and trusted by many users. Rewards are credited once offer rules are followed and advertiser verification is completed. If you ever face an issue, our support team is here to help.
-
-Q: After completing the task, points are not credited.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I completed 2 levels and I haven't received my reward.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: complete task but add reward please 
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: mene 50levl par kr liya hu mujhe coin q nhi mila sir ji
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: 250 lavel hone ke baad bhi coin nahi mila he 24 hours ho gaya hai
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I don't get rewards after buying
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I have complete my offer but reward is not added. why everytime didn't get the reward .
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I followed all the rules but I did not get the reward.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I have completed the task and they don't give my coins. Please issue my reward
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: i reached 300m but didn't get coins is this game is fake
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I have installed the app and used for sometime but did not receive the reward I complete the offer
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: withdrawal kyu nhai ho raha hai sir account hold bata raha hai
-A: The account gets blocked whenever there are miscellaneous activities found. This could happen for several reasons: Usage of VPNs, Proxies, Automated tools, scripts, or any third-party software to complete the offers that violate our policy is strictly prohibited. We recommend that you disable any such tools on your device.
-
-Q: task pending issue pending verification issue why it is not verify
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I reached 300m but didn't get coins is this game is fake
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: i reached 300m but didn't get coins is this game is fake
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I don't got any reward after doing task Pls check and give me reward.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: my task is not completed, so please check and complete my task and give me my reward.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-
-Q: I didn't get the reward from the 500m mission even though I worked on it for hours but the reward didn't come in
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: offer complete karne ke baad bhi Paisa nhe mila hai
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: All the tasks are completed and the application is showing verification pending and is not updated.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: Hi sir, I have completeted the steps by steps but until did not receive my reward. What i do now sir
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: my task are shown not completed but I have done all task so plz give my rewards as soon as possible
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: money not received please check please give me my reward
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: task was completed fr token kyo ni aare please help kro
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I am not getting my rewards the task is competed but reward is now also on pending verification please see what is the matter
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I have completed taks it's showing not pending verification
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-Q: Reward has not credited after completing task also I want my reward
-
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-Q: pending verification problems i am completed a task but reward i pending verification solve plz
-
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-Q: i completed all task but last task raword are missing
-
-Q: please update my offer progress the offer progress is pending verification.
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
-
-Q: I don't recive my reward please check and send my reward 
-A: Rewards will be added after the advertiser verifies your offer completion, which usually takes 24–48 hours.
+A:
+- It is the average time other users received rewards for this offer.
+- Actual time varies by rules and verification; use it as guidance only.
+- If not credited after 72 hours, contact support.
+Keywords: average reward time, estimate, timeline

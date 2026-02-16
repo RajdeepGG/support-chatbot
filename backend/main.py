@@ -164,11 +164,11 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     context_str = "\n\n".join(docs)
     
     system_prompt = (
-        "You are a helpful support assistant. Use the following context to answer the user's question. "
+        "You are a helpful offer-support assistant. Use ONLY the provided context. "
         "If the answer is not in the context, say you don't know. "
-        "Keep the answer concise and helpful. "
-        "Do not provide any information about credit cards, bank accounts, passwords, or other sensitive personal information. "
-        "Do not discuss hacking, exploits, vulnerabilities, or illegal activities. "
+        "Answer in 2–4 short sentences or 3–5 concise bullets. Avoid repetition. "
+        "Prefer clear, actionable guidance (e.g., typical verification window is 24–48 hours). "
+        "Never include sensitive information or discuss illegal activities. "
         "If asked about sensitive topics, politely decline and suggest contacting support."
     )
     
@@ -180,11 +180,15 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         response_buffer += chunk
         yield chunk
     
-    # Final content filtering on complete response
+    # Final content filtering on complete response (avoid duplicating full reply)
     filtered_response = guard_rails.content_filter.filter_response(response_buffer)
     if filtered_response != response_buffer:
-        # If filtering occurred, yield the filtered version
-        yield "\n" + filtered_response
+        if filtered_response.startswith(response_buffer):
+            note = filtered_response[len(response_buffer):].strip()
+            if note:
+                yield "\n" + note
+        else:
+            yield "\n[Some content was removed due to policy]"
     
     if offer_id:
         if not offer:
