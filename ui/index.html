@@ -140,6 +140,7 @@
       LLM_ENABLED &&
       (!qpAll.get("offerId") || !qpAll.get("offerName") || !qpAll.get("offerIconUrl") || !qpAll.get("userId"))
     );
+    let pendingInitialMsg = null;
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
@@ -218,7 +219,16 @@
       const useSecure = isHttps || (WS_HOST_PARAM && !/^localhost(:\d+)?$/.test(host));
       const url = (useSecure ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
-      ws.onopen = () => {};
+      ws.onopen = () => {
+        if (pendingInitialMsg) {
+          const m = pendingInitialMsg;
+          pendingInitialMsg = null;
+          addBubble(m, "user");
+          currentBotBubble = addBubble("", "bot");
+          showTypingIndicator();
+          try { ws.send(JSON.stringify({ message: m, offer_id: "" })); } catch (e) {}
+        }
+      };
       ws.onmessage = (event) => {
         if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         if (event.data === "\n\n") {
@@ -246,9 +256,15 @@
       if (LLM_ENABLED) { try { connect(); } catch (e) {} }
       showTypeIssue();
       if (ISSUE_TYPE_PARAM) {
-        addBubble(ISSUE_TYPE_PARAM, "user");
+        const m = `I need help with ${ISSUE_TYPE_PARAM}.`;
+        pendingInitialMsg = m;
         if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ message: ISSUE_TYPE_PARAM, offer_id: "" }));
+          const tmp = pendingInitialMsg;
+          pendingInitialMsg = null;
+          addBubble(tmp, "user");
+          currentBotBubble = addBubble("", "bot");
+          showTypingIndicator();
+          try { ws.send(JSON.stringify({ message: tmp, offer_id: "" })); } catch (e) {}
         }
       }
     } else {
