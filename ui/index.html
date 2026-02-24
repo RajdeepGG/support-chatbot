@@ -201,7 +201,11 @@
     }
     function showTypingIndicator() {
       if (typingEl) return;
-      if (!currentBotBubble) return;
+      if (!currentBotBubble) {
+        // Create a temporary bubble reserved for typing; remove if no text arrives
+        currentBotBubble = addBubble("", "bot");
+        currentBotBubble.setAttribute("data-typing-only", "1");
+      }
       typingEl = document.createElement("span");
       typingEl.className = "typing";
       typingEl.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
@@ -224,7 +228,7 @@
           const m = pendingInitialMsg;
           pendingInitialMsg = null;
           addBubble(m, "user");
-          currentBotBubble = addBubble("", "bot");
+          currentBotBubble = null;
           showTypingIndicator();
           try { ws.send(JSON.stringify({ message: m, offer_id: "" })); } catch (e) {}
         }
@@ -233,10 +237,16 @@
         if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         if (event.data === "\n\n") {
           hideTypingIndicator();
+          // If nothing was written and this was a typing-only bubble, remove it
+          if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
+              (currentBotBubble.textContent || "").trim() === "") {
+            currentBotBubble.remove();
+          }
           currentBotBubble = null;
           return;
         }
         hideTypingIndicator();
+        currentBotBubble.removeAttribute("data-typing-only");
         currentBotBubble.textContent += event.data;
         chatLog.scrollTop = chatLog.scrollHeight;
       };
@@ -542,7 +552,7 @@
       const offer = offerSelect.value;
       if (!msg) return;
       addBubble(msg, "user");
-      currentBotBubble = addBubble("", "bot");
+      currentBotBubble = null;
       showTypingIndicator();
       msgInput.value = "";
       if (ws && ws.readyState === WebSocket.OPEN) {
