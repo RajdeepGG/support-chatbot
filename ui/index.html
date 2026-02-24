@@ -134,6 +134,12 @@
     const guideById = { "925599": "videos/tutorial.mp4", "111222": "videos/tutorial.mp4", "333444": "videos/tutorial.mp4" };
     const LLM_ENABLED = new URLSearchParams(location.search).get("llm") === "1";
     const WS_HOST_PARAM = new URLSearchParams(location.search).get("wsHost");
+    const ISSUE_TYPE_PARAM = new URLSearchParams(location.search).get("issueType");
+    const qpAll = new URLSearchParams(location.search);
+    const JUST_CHAT_MODE = (
+      LLM_ENABLED &&
+      (!qpAll.get("offerId") || !qpAll.get("offerName") || !qpAll.get("offerIconUrl") || !qpAll.get("userId"))
+    );
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
@@ -230,8 +236,25 @@
     offerIcon.src = aiSupportIcon();
     applyOfferFromParams();
     renderOffersList();
-    if (!offerSelect.value) renderEmptyState();
-    if (LLM_ENABLED) { try { connect(); } catch (e) {} }
+    if (JUST_CHAT_MODE) {
+      document.querySelector(".controls").style.display = "none";
+      document.getElementById("offersList").style.display = "none";
+      offerName.textContent = "Chat Support";
+      offerBadge.textContent = "";
+      offerBadge.className = "badge hidden";
+      chatLog.innerHTML = "";
+      if (LLM_ENABLED) { try { connect(); } catch (e) {} }
+      showTypeIssue();
+      if (ISSUE_TYPE_PARAM) {
+        addBubble(ISSUE_TYPE_PARAM, "user");
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ message: ISSUE_TYPE_PARAM, offer_id: "" }));
+        }
+      }
+    } else {
+      if (!offerSelect.value) renderEmptyState();
+      if (LLM_ENABLED) { try { connect(); } catch (e) {} }
+    }
 
     offerSelect.addEventListener("change", () => {
       chatLog.innerHTML = "";
