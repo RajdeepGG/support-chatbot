@@ -58,7 +58,7 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-        self.nudge_enabled[websocket] = True
+        self.nudge_enabled[websocket] = False
         self.update_activity(websocket)
 
     def disconnect(self, websocket: WebSocket):
@@ -263,6 +263,11 @@ async def websocket_endpoint(websocket: WebSocket):
             if event == "clear_chat":
                 manager.nudge_enabled[websocket] = True
                 await manager.send_message("\n\n", websocket)
+                manager.update_activity(websocket)
+                continue
+            
+            if event == "start_typing":
+                manager.nudge_enabled[websocket] = True
                 manager.update_activity(websocket)
                 continue
             

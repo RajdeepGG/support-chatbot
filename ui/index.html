@@ -94,6 +94,7 @@
       <div class="inputRow hidden" id="inputRow">
         <input id="msg" placeholder="Type your query" />
         <button class="send" id="sendBtn">Send</button>
+        <button class="send" id="endBtn">End</button>
       </div>
     </div>
     <div class="footer hidden" id="footerText">Select an option above to continue</div>
@@ -113,6 +114,7 @@
     const chatLog = document.getElementById("chatLog");
     const msgInput = document.getElementById("msg");
     const sendBtn = document.getElementById("sendBtn");
+    const endBtn = document.getElementById("endBtn");
     const inputRow = document.getElementById("inputRow");
     const offerSelect = document.getElementById("offer");
     const offerName = document.getElementById("offerName");
@@ -141,6 +143,7 @@
       (!qpAll.get("offerId") || !qpAll.get("offerName") || !qpAll.get("offerIconUrl") || !qpAll.get("userId"))
     );
     let pendingInitialMsg = null;
+    let pendingStartTyping = false;
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
@@ -224,6 +227,10 @@
       const url = (useSecure ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
       ws.onopen = () => {
+        if (pendingStartTyping) {
+          pendingStartTyping = false;
+          try { ws.send(JSON.stringify({ event: "start_typing" })); } catch (e) {}
+        }
         if (pendingInitialMsg) {
           const m = pendingInitialMsg;
           pendingInitialMsg = null;
@@ -567,9 +574,17 @@
       if (LLM_ENABLED && (!ws || ws.readyState !== WebSocket.OPEN)) {
         try { connect(); } catch (e) {}
       }
+      if (LLM_ENABLED) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          try { ws.send(JSON.stringify({ event: "start_typing" })); } catch (e) {}
+        } else {
+          pendingStartTyping = true;
+        }
+      }
       inputRow.classList.remove("hidden");
       msgInput.focus();
     }
+    endBtn.onclick = () => { endChat(); };
   </script>
 
 </body>
