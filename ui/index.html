@@ -33,8 +33,9 @@
     .suggest { display: flex; gap: 8px; margin-top: 10px; }
     .suggest button { flex: 1; background: #2a3856; color: #dbe6ff; border: 1px solid #34415f; border-radius: 12px; padding: 10px; font-size: 14px; transition: background .15s ease, box-shadow .15s ease; }
     .suggest button:hover { background: #334466; box-shadow: 0 0 0 2px rgba(74,144,226,0.25); }
-    .inputRow { display: flex; gap: 8px; margin-top: 10px; }
-    .send { padding: 12px 16px; background: linear-gradient(135deg, #3b6ee6 0%, #2c5ac7 100%); color: #fff; border: none; border-radius: 12px; font-weight: 600; letter-spacing: .2px; transition: opacity .15s ease, transform .02s ease, box-shadow .15s ease; box-shadow: 0 6px 16px rgba(74,144,226,.25); }
+    .inputRow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); }
+    .inputRow input { flex: 1 1 200px; min-width: 140px; }
+    .send { padding: 12px 16px; background: linear-gradient(135deg, #3b6ee6 0%, #2c5ac7 100%); color: #fff; border: none; border-radius: 12px; font-weight: 600; letter-spacing: .2px; transition: opacity .15s ease, transform .02s ease, box-shadow .15s ease; box-shadow: 0 6px 16px rgba(74,144,226,.25); flex: 0 0 auto; white-space: nowrap; min-width: 68px; }
     .send:active { transform: scale(0.98); }
     .footer { text-align: center; color: #9aa8c9; font-size: 13px; padding: 12px; }
     .hidden { display: none; }
