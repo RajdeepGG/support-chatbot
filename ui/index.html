@@ -228,6 +228,9 @@
       const url = (useSecure ? "wss://" : "ws://") + host + "/ws";
       ws = new WebSocket(url);
       ws.onopen = () => {
+        // Connected: clear status and enable send
+        footerText.classList.add("hidden");
+        sendBtn.disabled = false;
         if (pendingStartTyping) {
           pendingStartTyping = false;
           try { ws.send(JSON.stringify({ event: "start_typing" })); } catch (e) {}
@@ -265,7 +268,12 @@
           currentBotBubble.remove();
           currentBotBubble = null;
         }
-        if (!chatEnded) setTimeout(connect, 3000);
+        if (!chatEnded) {
+          footerText.textContent = "Reconnecting…";
+          footerText.classList.remove("hidden");
+          sendBtn.disabled = true;
+          setTimeout(connect, 3000);
+        }
       };
       ws.onerror = () => {
         hideTypingIndicator();
@@ -274,7 +282,11 @@
           currentBotBubble.remove();
           currentBotBubble = null;
         }
-        addBubble("Error: Connection lost.", "bot");
+        if (!chatEnded) {
+          footerText.textContent = "Reconnecting…";
+          footerText.classList.remove("hidden");
+          sendBtn.disabled = true;
+        }
       };
     }
     offerIcon.src = aiSupportIcon();
