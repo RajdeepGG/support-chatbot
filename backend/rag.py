@@ -34,10 +34,22 @@ def load_docs():
 
 def search_docs(query, offer_name=None):
     search_text = query
-
     embedding = model.encode(search_text).tolist()
-    results = collection.query(
-        query_embeddings=[embedding],
-        n_results=3
-    )
-    return results["documents"][0]
+    try:
+        results = collection.query(
+            query_embeddings=[embedding],
+            n_results=5,
+            include=["documents", "distances"]
+        )
+        docs = results.get("documents", [[]])[0] or []
+        dists = results.get("distances", [[]])[0] or [None] * len(docs)
+        # Keep only close matches; fall back to top-1 if none pass threshold
+        threshold = 0.35
+        filtered = [doc for doc, dist in zip(docs, dists) if dist is None or dist <= threshold]
+        if not filtered and docs:
+            filtered = [docs[0]]
+        # Return top 2 for concise prompting
+        return filtered[:2]
+    except Exception:
+        # Fallback: return empty to trigger graceful handling
+        return []

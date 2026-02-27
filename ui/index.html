@@ -2,59 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    body { background: #f4f7f9; display: flex; justify-content: center; align-items: flex-start; padding: 24px 12px; }
-    .app { width: 100%; max-width: 420px; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); overflow: hidden; }
-    .header { background: #0b2c6a; color: #fff; padding: 16px; display: flex; align-items: center; gap: 12px; }
-    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #e5eefc; overflow: hidden; }
+    body { background: #0f1424; display: flex; justify-content: center; align-items: flex-start; padding: 24px 12px; color: #e6edf7; }
+    .app { width: 100%; max-width: 440px; background: transparent; border-radius: 22px; overflow: hidden; }
+  .header { background: linear-gradient(135deg, #0d1426 0%, #1a2740 100%); color: #fff; padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 20px; display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 8px; background: #1b2438; overflow: hidden; }
     .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .title { flex: 1; }
     .title .name { font-weight: 600; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; margin-top: 6px; }
-    .badge.ongoing { background: #eaf7ed; color: #1f7a2e; }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; margin-top: 8px; background: rgba(255,255,255,0.08); }
+    .badge.ongoing { background: #ffefb3; color: #7a5c00; }
     .badge.expired { background: #fdeaea; color: #b42727; }
     .badge.completed { background: #eaf1fd; color: #2c5ac7; }
     .badge.hidden { display: none; }
-    .content { padding: 12px; }
+    .content { padding: 14px; }
     .controls { display: none; }
-    select, input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #ccd3e0; font-size: 14px; }
-    input:focus, select:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 4px rgba(74,144,226,.6); }
-    .chat { background: #f7f8fb; border: 1px solid #e3e7ef; min-height: 320px; max-height: 60vh; border-radius: 12px; padding: 12px; overflow-y: auto; }
-    .bubble { max-width: 85%; border-radius: 12px; padding: 10px 12px; margin: 8px 0; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .bubble.user { margin-left: auto; background: #eaf1ff; color: #193b7a; }
-    .bubble.bot { background: #fff; border: 1px solid #e4e8f2; }
+    select, input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #34415f; background: #0f1424; color: #e6edf7; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 4px rgba(74,144,226,.4); }
+    .chat { background: #12192b; border: 1px solid #253047; min-height: 360px; max-height: 62vh; border-radius: 14px; padding: 12px; overflow-y: auto; }
+    .bubble { max-width: 85%; border-radius: 14px; padding: 12px 14px; margin: 8px 0; font-size: 15px; line-height: 1.55; box-shadow: none; color: #e6edf7; }
+    .bubble.user { margin-left: auto; background: #2a3856; color: #dbe6ff; }
+    .bubble.bot { background: #26334d; border: 1px solid #34415f; }
     .typing { display: inline-flex; align-items: center; gap: 6px; }
-    .typing .dot { width: 6px; height: 6px; background: #c6d0ea; border-radius: 50%; animation: dotPulse 1.2s infinite ease-in-out; }
+    .typing .dot { width: 6px; height: 6px; background: #8fa2cf; border-radius: 50%; animation: dotPulse 1.2s infinite ease-in-out; }
     .typing .dot:nth-child(2) { animation-delay: 0.2s; }
     .typing .dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes dotPulse { 0% { opacity: 0.2; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } 100% { opacity: 0.2; transform: translateY(0); } }
     .suggest { display: flex; gap: 8px; margin-top: 10px; }
-    .suggest button { flex: 1; background: #eef2fa; color: #1b2a4a; border: 1px solid #dbe1f0; border-radius: 12px; padding: 10px; font-size: 14px; }
-    .inputRow { display: flex; gap: 8px; margin-top: 10px; }
-    .send { padding: 10px 16px; background: #4a90e2; color: #fff; border: none; border-radius: 8px; }
-    .footer { text-align: center; color: #6a7692; font-size: 13px; padding: 12px; }
+    .suggest button { flex: 1; background: #2a3856; color: #dbe6ff; border: 1px solid #34415f; border-radius: 12px; padding: 10px; font-size: 14px; transition: background .15s ease, box-shadow .15s ease; }
+    .suggest button:hover { background: #334466; box-shadow: 0 0 0 2px rgba(74,144,226,0.25); }
+    .inputRow { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; align-items: center; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); }
+    .inputRow input { width: 100%; min-width: 0; }
+    .btnGroup { display: flex; gap: 8px; align-items: center; }
+    .send { padding: 12px 16px; background: linear-gradient(135deg, #3b6ee6 0%, #2c5ac7 100%); color: #fff; border: none; border-radius: 12px; font-weight: 600; letter-spacing: .2px; transition: opacity .15s ease, transform .02s ease, box-shadow .15s ease; box-shadow: 0 6px 16px rgba(74,144,226,.25); white-space: nowrap; min-width: 72px; }
+    @media (max-width: 420px) {
+      .inputRow { grid-template-columns: 1fr; }
+      .btnGroup { justify-content: flex-end; }
+    }
+    .send:active { transform: scale(0.98); }
+    .footer { text-align: center; color: #9aa8c9; font-size: 13px; padding: 12px; }
     .hidden { display: none; }
     .bubble.bot ul { margin: 6px 0 0 18px; padding: 0; }
     .bubble.bot li { margin: 6px 0; }
-    .optionsBubble .title { font-weight: 600; margin-bottom: 8px; }
-    .optionBtn { width: 100%; text-align: left; background: #eef2fa; color: #1b2a4a; border: 1px solid #dbe1f0; border-radius: 16px; padding: 12px 14px; margin: 8px 0; font-size: 14px; }
+    .optionsBubble .title { font-weight: 600; margin-bottom: 8px; color: #cfe0ff; }
+    .optionBtn { width: 100%; text-align: left; background: #2a3856; color: #dbe6ff; border: 1px solid #34415f; border-radius: 16px; padding: 12px 14px; margin: 8px 0; font-size: 14px; transition: background .15s ease, box-shadow .15s ease; }
+    .optionBtn:hover { background: #334466; box-shadow: 0 0 0 2px rgba(74,144,226,0.25); }
     .chip { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
     .offersList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
-    .offerItem { display: flex; align-items: center; gap: 12px; background: #f7f8fb; border: 1px solid #e3e7ef; border-radius: 16px; padding: 10px 12px; }
-    .offerItem.selected { border-color: #4a90e2; box-shadow: 0 0 0 2px rgba(74,144,226,.15); }
-    .offerItem .icon { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: #e5eefc; }
+    .offerItem { display: flex; align-items: center; gap: 12px; background: #12192b; border: 1px solid #253047; border-radius: 18px; padding: 14px 16px; transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease; }
+    .offerItem:hover { box-shadow: 0 0 0 2px rgba(74,144,226,0.22); transform: translateY(-1px); }
+    .offerItem.selected { border-color: #4a90e2; box-shadow: 0 0 0 2px rgba(74,144,226,.28); }
+    .offerItem .icon { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: #1b2438; }
     .offerItem .icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .offerItem .titleTxt { flex: 1; font-weight: 600; color: #1b2a4a; }
+    .offerItem .titleTxt { flex: 1; font-weight: 600; color: #e6edf7; }
     .chip.ongoing { background: #ffefb3; color: #7a5c00; }
-    .chip.expired { background: #ffd7d7; color: #8a1d1d; }
-    .chip.completed { background: #c4f2ce; color: #0e6a2a; }
+    .chip.expired { background: #f7b9b9; color: #5a1010; }
+    .chip.completed { background: #b9f1cb; color: #0e6a2a; }
     .videoOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .videoOverlay.show { display: flex; }
-    .videoBox { width: 100%; max-width: 420px; background: #000; border-radius: 12px; padding: 8px; }
+    .videoBox { width: 100%; max-width: 440px; background: #000; border-radius: 16px; padding: 8px; position: relative; padding-bottom: 96px; }
     .videoBox video { width: 100%; height: auto; border-radius: 8px; display: block; }
-    .videoActions { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .videoFooter { position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 12px); display: flex; justify-content: flex-end; gap: 8px; }
+    .videoCloseTop { position: absolute; top: calc(env(safe-area-inset-top) + 12px); right: 12px; width: 44px; height: 44px; border-radius: 999px; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 22px; display: flex; align-items: center; justify-content: center; z-index: 1002; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+    .emptyState { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #e6edf7; }
+    .emptyIcon { font-size: 28px; }
+    .emptyTitle { font-weight: 700; }
+    .emptyDesc { font-size: 14px; color: #9aa8c9; max-width: 320px; text-align: center; }
+    .chatEnded { display: inline-block; margin: 16px auto 4px; padding: 10px 14px; border-radius: 999px; background: #2a3856; color: #9aa8c9; border: 1px solid #34415f; }
   </style>
 </head>
 <body>
@@ -80,19 +96,22 @@
       <div class="chat" id="chatLog"></div>
       <div class="suggest hidden" id="suggestRow">
         <button id="btnNotAble">I'm not able to complete the offer</button>
-        <button id="btnType">I'd rather type out my issue</button>
       </div>
       <div class="inputRow hidden" id="inputRow">
         <input id="msg" placeholder="Type your query" />
-        <button class="send" id="sendBtn">Send</button>
+        <div class="btnGroup">
+          <button class="send" id="sendBtn">Send</button>
+          <button class="send" id="endBtn">End</button>
+        </div>
       </div>
     </div>
     <div class="footer hidden" id="footerText">Select an option above to continue</div>
   </div>
   <div id="videoOverlay" class="videoOverlay">
     <div class="videoBox">
+      <button id="closeVideoTop" class="videoCloseTop" aria-label="Close">×</button>
       <video id="guideVideo" controls playsinline preload="metadata"></video>
-      <div class="videoActions">
+      <div class="videoFooter">
         <button class="send" id="closeVideoBtn">Close</button>
       </div>
     </div>
@@ -103,13 +122,13 @@
     const chatLog = document.getElementById("chatLog");
     const msgInput = document.getElementById("msg");
     const sendBtn = document.getElementById("sendBtn");
+    const endBtn = document.getElementById("endBtn");
     const inputRow = document.getElementById("inputRow");
     const offerSelect = document.getElementById("offer");
     const offerName = document.getElementById("offerName");
     const offerBadge = document.getElementById("offerBadge");
     const offerIcon = document.getElementById("offerIcon");
     const btnNotAble = document.getElementById("btnNotAble");
-    const btnType = document.getElementById("btnType");
     const suggestRow = document.getElementById("suggestRow");
     const footerText = document.getElementById("footerText");
     let typingEl = null;
@@ -121,18 +140,59 @@
     const videoOverlay = document.getElementById("videoOverlay");
     const guideVideo = document.getElementById("guideVideo");
     const closeVideoBtn = document.getElementById("closeVideoBtn");
+    const closeVideoTop = document.getElementById("closeVideoTop");
     const guideById = { "925599": "videos/tutorial.mp4", "111222": "videos/tutorial.mp4", "333444": "videos/tutorial.mp4" };
+    const LLM_ENABLED = new URLSearchParams(location.search).get("llm") === "1";
+    const WS_HOST_PARAM = new URLSearchParams(location.search).get("wsHost");
+    const ISSUE_TYPE_PARAM = new URLSearchParams(location.search).get("issueType");
+    const qpAll = new URLSearchParams(location.search);
+    const JUST_CHAT_MODE = (
+      LLM_ENABLED &&
+      (!qpAll.get("offerId") || !qpAll.get("offerName") || !qpAll.get("offerIconUrl") || !qpAll.get("userId"))
+    );
+    let pendingInitialMsg = null;
+    let pendingStartTyping = false;
+    let chatEnded = false;
+
+    function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
+      if (!offerId) return;
+      const label = offerName || "Offer";
+      statusById[offerId] = status || "Ongoing";
+      if (offerIconUrl) iconById[offerId] = offerIconUrl;
+      offerSelect.innerHTML = `<option value="">Select Offer</option><option value="${offerId}">${label}</option>`;
+      renderOffersList();
+      highlightSelectedOffer();
+      if (!offerSelect.value) { renderEmptyState(); }
+    }
+    function applyOfferFromParams() {
+      const qp = new URLSearchParams(location.search);
+      const offerId = qp.get("offerId");
+      const offerName = qp.get("offerName");
+      const offerIconUrl = qp.get("offerIconUrl");
+      const status = qp.get("status") || "Ongoing";
+      if (!offerId) return;
+      setOfferFromData({ offerId, offerName, offerIconUrl, status });
+    }
+    window.addEventListener("popstate", applyOfferFromParams);
+    window.addEventListener("hashchange", applyOfferFromParams);
+    window.addEventListener("message", (e) => {
+      const d = e.data;
+      if (d && d.type === "setOffer" && d.payload) setOfferFromData(d.payload);
+    });
 
     function placeholderIcon(title) {
       const letter = (title || "S").trim().charAt(0).toUpperCase() || "S";
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='100%' height='100%' fill='#e5eefc'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='#193b7a' font-family='Segoe UI, Roboto, Arial'>${letter}</text></svg>`;
       return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
     }
+    function aiSupportIcon() {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#1460f2'/><stop offset='100%' stop-color='#4a90e2'/></linearGradient></defs><rect rx='8' width='40' height='40' fill='url(#g)'/><g fill='#fff'><circle cx='20' cy='16' r='6'/><rect x='11' y='23' width='18' height='8' rx='4'/><circle cx='17' cy='16' r='1.5'/><circle cx='23' cy='16' r='1.5'/></g></svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
 
-    function updateOfferIcon(id, title) {
-      const src = iconById[id] || placeholderIcon(title);
-      offerIcon.src = src;
-      offerIcon.onerror = () => { offerIcon.src = placeholderIcon(title); };
+    function updateOfferIcon() {
+      offerIcon.src = aiSupportIcon();
+      offerIcon.onerror = () => { offerIcon.src = aiSupportIcon(); };
     }
 
     function addBubble(text, who) {
@@ -153,7 +213,11 @@
     }
     function showTypingIndicator() {
       if (typingEl) return;
-      if (!currentBotBubble) return;
+      if (!currentBotBubble) {
+        // Create a temporary bubble reserved for typing; remove if no text arrives
+        currentBotBubble = addBubble("", "bot");
+        currentBotBubble.setAttribute("data-typing-only", "1");
+      }
       typingEl = document.createElement("span");
       typingEl.className = "typing";
       typingEl.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
@@ -165,25 +229,106 @@
     }
 
     function connect() {
-      ws = new WebSocket("ws://10.0.2.2:8000/ws");
-      ws.onopen = () => {};
+      const isHttps = location.protocol === "https:";
+      const defaultHost = isHttps ? location.host : "localhost:8000";
+      const host = WS_HOST_PARAM || defaultHost;
+      const useSecure = isHttps || (WS_HOST_PARAM && !/^localhost(:\d+)?$/.test(host));
+      const url = (useSecure ? "wss://" : "ws://") + host + "/ws";
+      ws = new WebSocket(url);
+      ws.onopen = () => {
+        // Connected: clear status and enable send
+        footerText.classList.add("hidden");
+        sendBtn.disabled = false;
+        if (pendingStartTyping) {
+          pendingStartTyping = false;
+          try { ws.send(JSON.stringify({ event: "start_typing" })); } catch (e) {}
+        }
+        if (pendingInitialMsg) {
+          const m = pendingInitialMsg;
+          pendingInitialMsg = null;
+          addBubble(m, "user");
+          currentBotBubble = null;
+          showTypingIndicator();
+          try { ws.send(JSON.stringify({ message: m, offer_id: "" })); } catch (e) {}
+        }
+      };
       ws.onmessage = (event) => {
         if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         if (event.data === "\n\n") {
           hideTypingIndicator();
+          // If nothing was written and this was a typing-only bubble, remove it
+          if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
+              (currentBotBubble.textContent || "").trim() === "") {
+            currentBotBubble.remove();
+          }
           currentBotBubble = null;
           return;
         }
         hideTypingIndicator();
+        currentBotBubble.removeAttribute("data-typing-only");
         currentBotBubble.textContent += event.data;
         chatLog.scrollTop = chatLog.scrollHeight;
       };
-      ws.onclose = () => { setTimeout(connect, 3000); };
-      ws.onerror = () => { addBubble("Error: Connection lost.", "bot"); };
+      ws.onclose = () => {
+        hideTypingIndicator();
+        if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
+            (currentBotBubble.textContent || "").trim() === "") {
+          currentBotBubble.remove();
+          currentBotBubble = null;
+        }
+        if (!chatEnded) {
+          footerText.textContent = "Reconnecting…";
+          footerText.classList.remove("hidden");
+          sendBtn.disabled = true;
+          setTimeout(connect, 3000);
+        }
+      };
+      ws.onerror = () => {
+        hideTypingIndicator();
+        if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
+            (currentBotBubble.textContent || "").trim() === "") {
+          currentBotBubble.remove();
+          currentBotBubble = null;
+        }
+        if (!chatEnded) {
+          footerText.textContent = "Reconnecting…";
+          footerText.classList.remove("hidden");
+          sendBtn.disabled = true;
+        }
+      };
     }
-    connect();
-    offerIcon.src = placeholderIcon("Support");
+    offerIcon.src = aiSupportIcon();
+    applyOfferFromParams();
     renderOffersList();
+    if (JUST_CHAT_MODE) {
+      document.querySelector(".controls").style.display = "none";
+      document.getElementById("offersList").style.display = "none";
+      offerName.textContent = "Chat Support";
+      offerBadge.textContent = "";
+      offerBadge.className = "badge hidden";
+      chatLog.innerHTML = "";
+      if (LLM_ENABLED) { try { connect(); } catch (e) {} }
+      showTypeIssue();
+      // Show End button only in chat-only mode
+      endBtn.style.display = "inline-block";
+      if (ISSUE_TYPE_PARAM) {
+        const m = `I need help with ${ISSUE_TYPE_PARAM}.`;
+        pendingInitialMsg = m;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          const tmp = pendingInitialMsg;
+          pendingInitialMsg = null;
+          addBubble(tmp, "user");
+          currentBotBubble = addBubble("", "bot");
+          showTypingIndicator();
+          try { ws.send(JSON.stringify({ message: tmp, offer_id: "" })); } catch (e) {}
+        }
+      }
+    } else {
+      // Hide End button in guided mode
+      endBtn.style.display = "none";
+      if (!offerSelect.value) renderEmptyState();
+      if (LLM_ENABLED) { try { connect(); } catch (e) {} }
+    }
 
     offerSelect.addEventListener("change", () => {
       chatLog.innerHTML = "";
@@ -194,10 +339,11 @@
       hideTypingIndicator();
       const title = offerSelect.options[offerSelect.selectedIndex]?.text || "Support";
       offerName.textContent = title;
-      updateOfferIcon(offerSelect.value, title);
+      updateOfferIcon();
       if (!offerSelect.value) {
         offerBadge.textContent = "";
         offerBadge.className = "badge hidden";
+        renderEmptyState();
       } else {
         const status = statusById[offerSelect.value] || "Ongoing";
         offerBadge.textContent = status;
@@ -212,7 +358,7 @@
           addBubble("You can explore other available offers.", "bot");
         } else if (status === "Expired") {
           addBubble("This offer has expired.", "bot");
-          addBubble("You can try other available offers or type your issue for assistance.", "bot");
+          addBubble("You can try other available offers.", "bot");
         }
         // Set options per status
         setOptionsForStatus(status);
@@ -222,6 +368,24 @@
     });
 
     function updateFooterVisibility() { footerText.classList.add("hidden"); }
+    function renderEmptyState() {
+      chatLog.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "emptyState";
+      const icon = document.createElement("div");
+      icon.className = "emptyIcon";
+      icon.textContent = "🧩";
+      const title = document.createElement("div");
+      title.className = "emptyTitle";
+      title.textContent = "Select an offer to get help";
+      const desc = document.createElement("div");
+      desc.className = "emptyDesc";
+      desc.textContent = "Choose an offer above to see quick steps and a short video guide.";
+      wrap.appendChild(icon);
+      wrap.appendChild(title);
+      wrap.appendChild(desc);
+      chatLog.appendChild(wrap);
+    }
 
     let currentOptionsContainer = null;
     function setSuggestions(items, title = "What would you like to know?") {
@@ -253,7 +417,8 @@
       addBubble("Let’s get you back on track. Choose an option:", "bot");
       setSuggestions([
         { text: "Watch 2‑min guide", onClick: showWatchGuide },
-        { text: "View step‑by‑step instructions", onClick: showStepByStep }
+        { text: "View step‑by‑step instructions", onClick: showStepByStep },
+        { text: "I’d rather type out my issue", onClick: showTypeIssue }
       ]);
     }
 
@@ -264,8 +429,9 @@
       btn.textContent = "Watch now";
       btn.onclick = () => {
         const current = offerSelect.value;
-        const src = guideById[current] || "videos/walkthrough.mp4";
+        const src = guideById[current] || "videos/tutorial.mp4";
         openGuideVideo(src);
+        endChat();
       };
       const holder = document.createElement("div");
       holder.style.marginTop = "8px";
@@ -324,20 +490,8 @@
       }
     }
     function showBrowseOffers() {
-      addBubble("Here are new offers 🎉 Click to get started:", "bot");
-      const current = offerSelect.value;
-      const options = Array.from(offerSelect.options)
-        .filter(o => o.value && o.value !== current)
-        .slice(0, 2);
-      setSuggestions(options.map(o => ({
-        text: o.text,
-        onClick: () => {
-          offerSelect.value = o.value;
-          offerSelect.dispatchEvent(new Event("change"));
-          addBubble("Happy earning 💰🚀", "bot");
-          setSuggestions([]);
-        }
-      })));
+      addBubble("Navigate to offers screen to check other available offers", "bot");
+      endChat();
     }
 
     function showReportIssue() {
@@ -365,12 +519,22 @@
     }
 
     function endChat() {
-      addBubble("Thanks for chatting 👋 Happy earning 💰🚀", "bot");
+      chatEnded = true;
+      addBubble("Happy earning with Sikka! 💰🚀", "bot");
+      const pill = document.createElement("div");
+      pill.className = "chatEnded";
+      pill.textContent = "The chat has been ended";
+      const holder = document.createElement("div");
+      holder.style.display = "flex";
+      holder.style.justifyContent = "center";
+      holder.appendChild(pill);
+      chatLog.appendChild(holder);
       setSuggestions([]);
       inputRow.classList.add("hidden");
       try {
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ event: "end_chat" }));
+          try { ws.close(1000, "ended"); } catch (e) {}
         }
       } catch (e) {}
     }
@@ -399,8 +563,7 @@
       };
       guideVideo.onended = () => {
         closeGuideVideo();
-        addBubble("Happy earning 💰🚀", "bot");
-        setSuggestions([]);
+        endChat();
       };
     }
     function closeGuideVideo() {
@@ -410,20 +573,23 @@
       videoOverlay.classList.remove("show");
     }
     closeVideoBtn.onclick = closeGuideVideo;
+    closeVideoTop.onclick = closeGuideVideo;
 
     function setOptionsForStatus(status) {
       if (status === "Ongoing") {
         setSuggestions([
           { text: "I'm not able to complete the offer", onClick: showHelpOptions },
-          { text: "I'd rather type out my issue", onClick: () => { inputRow.classList.remove("hidden"); msgInput.focus(); } }
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       } else if (status === "Completed") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers }
+          { text: "Check out other available offers", onClick: showBrowseOffers },
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       } else if (status === "Expired") {
         setSuggestions([
-          { text: "Check out other available offers", onClick: showBrowseOffers }
+          { text: "Check out other available offers", onClick: showBrowseOffers },
+          { text: "I’d rather type out my issue", onClick: showTypeIssue }
         ]);
       }
     }
@@ -436,15 +602,34 @@
       const offer = offerSelect.value;
       if (!msg) return;
       addBubble(msg, "user");
-      currentBotBubble = addBubble("", "bot");
+      currentBotBubble = null;
+      pendingInitialMsg = msg;
       showTypingIndicator();
       msgInput.value = "";
       if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ message: msg, offer_id: offer }));
+        try { ws.send(JSON.stringify({ message: msg, offer_id: offer })); } catch (e) {}
+        pendingInitialMsg = null;
       } else {
-        addBubble("Error: No connection.", "bot");
+        try { connect(); } catch (e) {}
       }
     }
+
+    function showTypeIssue() {
+      addBubble("Type your message below.", "bot");
+      if (LLM_ENABLED && (!ws || ws.readyState !== WebSocket.OPEN)) {
+        try { connect(); } catch (e) {}
+      }
+      if (LLM_ENABLED) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          try { ws.send(JSON.stringify({ event: "start_typing" })); } catch (e) {}
+        } else {
+          pendingStartTyping = true;
+        }
+      }
+      inputRow.classList.remove("hidden");
+      msgInput.focus();
+    }
+    endBtn.onclick = () => { endChat(); };
   </script>
 
 </body>

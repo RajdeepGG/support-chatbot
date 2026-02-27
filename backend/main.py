@@ -1,18 +1,26 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import asyncio
 import time
 import json
-import rag
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 import priority
 import sla
 import offer_logic
-import llm
 import mock_offer_api
 import guard_rails
+CHAT_MODE = os.getenv("CHAT_MODE", "full")
+if CHAT_MODE != "decision_tree":
+    import rag
+    import llm
+else:
+    rag = None
+    llm = None
 
 app = FastAPI()
 
@@ -23,10 +31,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+UI_DIR = str(Path(__file__).resolve().parent.parent / "ui")
+app.mount("/ui", StaticFiles(directory=UI_DIR, html=True), name="ui")
+app.mount("/icons", StaticFiles(directory=Path(UI_DIR) / "icons"), name="icons")
+app.mount("/videos", StaticFiles(directory=Path(UI_DIR) / "videos"), name="videos")
 
-# -------------------------------------------------------------------------
+@app.get("/")
+async def root_page():
+    return FileResponse(Path(UI_DIR) / "index.html")
+
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(status_code=204)
+
+# --------------------------------------------------------------------------
 # WebSocket Connection Manager with Inactivity Monitoring
-# -------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class ConnectionManager:
     def __init__(self):
@@ -38,7 +58,7 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-        self.nudge_enabled[websocket] = True
+        self.nudge_enabled[websocket] = False
         self.update_activity(websocket)
 
     def disconnect(self, websocket: WebSocket):
@@ -59,6 +79,9 @@ class ConnectionManager:
         self.alerted[websocket] = False  # Reset alert status on new activity
 
 manager = ConnectionManager()
+
+# Track per-connection active generation task to allow cancellation on new messages
+client_tasks: Dict[WebSocket, asyncio.Task] = {}
 
 # Background task to check for inactivity
 async def inactivity_monitor():
@@ -82,7 +105,8 @@ async def inactivity_monitor():
 @app.on_event("startup")
 async def startup_event():
     print("Loading knowledge base...")
-    rag.load_docs()
+    if rag:
+        rag.load_docs()
     # Start the background monitor
     asyncio.create_task(inactivity_monitor())
 
@@ -112,6 +136,10 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         yield "I can help with offer-related support. Please ask an offer-related question."
         return
     
+    if CHAT_MODE == "decision_tree":
+        yield "Please use the options above to continue."
+        return
+    
     # 5. Determine Priority
     priority_level = priority.determine_priority(user_msg)
     print(f"Priority: {priority_level}")
@@ -136,14 +164,24 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         return
 
     # 6. Generate Response with LLM
-    context_str = "\n\n".join(docs)
+    def _clean_context(d: str) -> str:
+        lines = []
+        for ln in (d or "").splitlines():
+            if ln.strip().lower().startswith("keywords:"):
+                continue
+            lines.append(ln)
+        return "\n".join(lines).strip()
+    context_docs = [ _clean_context(d) for d in docs[:2] ]
+    context_str = "\n\n".join(context_docs)
     
     system_prompt = (
-        "You are a helpful support assistant. Use the following context to answer the user's question. "
+        "You are a helpful offer-support assistant. Use ONLY the provided context to answer. "
         "If the answer is not in the context, say you don't know. "
-        "Keep the answer concise and helpful. "
-        "Do not provide any information about credit cards, bank accounts, passwords, or other sensitive personal information. "
-        "Do not discuss hacking, exploits, vulnerabilities, or illegal activities. "
+        "Respond in the user's language when possible. "
+        "Keep answers brief: max 80 words, or 3–5 concise bullets. "
+        "Do not repeat sentences, do not invent examples, tables, or stories. "
+        "Prefer clear, actionable guidance (e.g., typical verification window is 24–48 hours). "
+        "Never include sensitive information or discuss illegal activities. "
         "If asked about sensitive topics, politely decline and suggest contacting support."
     )
     
@@ -155,11 +193,15 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         response_buffer += chunk
         yield chunk
     
-    # Final content filtering on complete response
+    # Final content filtering on complete response (avoid duplicating full reply)
     filtered_response = guard_rails.content_filter.filter_response(response_buffer)
     if filtered_response != response_buffer:
-        # If filtering occurred, yield the filtered version
-        yield "\n" + filtered_response
+        if filtered_response.startswith(response_buffer):
+            note = filtered_response[len(response_buffer):].strip()
+            if note:
+                yield "\n" + note
+        else:
+            yield "\n[Some content was removed due to policy]"
     
     if offer_id:
         if not offer:
@@ -218,6 +260,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 offer_id = None
                 event = None
             
+            if event == "clear_chat":
+                manager.nudge_enabled[websocket] = True
+                await manager.send_message("\n\n", websocket)
+                manager.update_activity(websocket)
+                continue
+            
+            if event == "start_typing":
+                manager.nudge_enabled[websocket] = True
+                manager.update_activity(websocket)
+                continue
+            
             if event == "end_chat":
                 manager.nudge_enabled[websocket] = False
                 await manager.send_message("\n\n", websocket)
@@ -227,10 +280,23 @@ async def websocket_endpoint(websocket: WebSocket):
             if not user_msg:
                 continue
 
-            # Stream response back
-            async for chunk in process_chat(user_msg, offer_id, client_ip):
-                await manager.send_message(chunk, websocket)
-            await manager.send_message("\n\n", websocket)
+            # Cancel previous generation for this socket, if any
+            prev = client_tasks.get(websocket)
+            if prev and not prev.done():
+                prev.cancel()
+                try:
+                    await prev
+                except Exception:
+                    pass
+
+            async def stream_to_ws():
+                async for chunk in process_chat(user_msg, offer_id, client_ip):
+                    await manager.send_message(chunk, websocket)
+                await manager.send_message("\n\n", websocket)
+
+            task = asyncio.create_task(stream_to_ws())
+            client_tasks[websocket] = task
+            # Do not await here; allow next user message to preempt this one
             
             # Update activity again after sending response
             manager.update_activity(websocket)
@@ -242,4 +308,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 manager.nudge_enabled[websocket] = True
             
     except WebSocketDisconnect:
+        # Cleanup active task on disconnect
+        prev = client_tasks.get(websocket)
+        if prev and not prev.done():
+            prev.cancel()
+            try:
+                await prev
+            except Exception:
+                pass
+        if websocket in client_tasks:
+            del client_tasks[websocket]
         manager.disconnect(websocket)
