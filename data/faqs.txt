@@ -77,3 +77,195 @@ A:
 - Actual time varies by rules and verification; use it as guidance only.
 - If not credited after 72 hours, contact support.
 Keywords: average reward time, estimate, timeline
+
+Q: What is the Referral Reward program?
+
+A:
+
+It allows you to invite friends and earn rewards.
+
+You earn a reward when your referred friend completes eligible offers.
+
+Rewards are calculated based on your friend’s earnings.
+Keywords: referral program, invite friends, earn rewards
+
+Q: How do I refer a friend?
+
+A:
+
+Open the app and go to the Home page.
+
+Tap the Refer icon at the bottom.
+
+Tap “Refer a friend now” to get your referral link.
+
+You can copy and share your referral code manually.
+
+Your friend must use your referral code when joining (if required).
+Keywords: refer friend, referral link, referral code, invite
+
+Q: How does the referral reward work?
+
+A:
+
+Your friend must complete three offers.
+
+The offers must be successfully tracked and credited.
+
+You receive 50% of your friend’s total earnings from those three offers.
+
+Example: If your friend earns 1,000 coins, you receive 500 coins.
+Keywords: referral reward calculation, 50 percent reward, earn from friend
+
+Q: How can I share my referral code?
+
+A:
+
+Use the in-app sharing options.
+
+Copy the referral code and send it via WhatsApp, SMS, email, or social media.
+Keywords: share referral code, invite link, social sharing
+
+Q: Why didn’t I receive my referral reward?
+
+A:
+
+Your friend may not have completed three offers.
+
+The offers may not have been successfully tracked.
+
+The referral code may not have been applied correctly.
+
+Rewards are only issued after successful validation.
+Keywords: referral reward not credited, referral issue, referral validation
+
+
+Q: What does “Processing” payout status mean?
+
+A:
+
+Your payout request has been successfully initiated.
+
+Transfers are usually instant.
+
+In some cases, banks may take up to 72 hours or more.
+Keywords: payout processing, payment pending, transfer delay
+
+Q: What should I do if my payout is processing?
+
+A:
+
+Wait up to 72 hours.
+
+Check your bank statement or UPI history.
+
+Do not submit multiple payout requests.
+
+Contact support if not credited after 72 hours.
+Keywords: payout delay, payment not received, bank processing time
+
+Q: What does “Failed” payout status mean?
+
+A:
+
+The payout transfer was not successful.
+
+It may be due to an incorrect or invalid UPI ID.
+Keywords: payout failed, transfer failed, UPI issue
+
+Q: What should I do if my payout failed?
+
+A:
+
+Double-check your UPI ID.
+
+Ensure it is active and linked to your bank account.
+
+Update the correct UPI ID and try again.
+
+Contact support if the issue continues.
+Keywords: update UPI, payout retry, payment error
+
+
+Q: I purchased a gift card but did not receive the email. What should I do?
+
+A:
+
+Check your Spam/Junk folder.
+
+Search your inbox using the merchant name.
+
+There may be a delay in merchant email delivery.
+
+If not found, contact the merchant directly.
+Keywords: gift card not received, gift card email missing, redemption code
+
+Q: Why does this happen?
+
+A:
+
+Email may be filtered to Spam/Junk.
+
+There may be a delivery delay.
+
+The merchant directly manages gift card issuance.
+Keywords: gift card delay, merchant email issue
+
+Q: How do I contact the merchant for gift card issues?
+
+A:
+
+Share your Payment ID.
+
+Mention the merchant name.
+
+Request help with the gift card or redemption code.
+
+Merchant Name: XOXODAY
+
+Contact: cs@xoxoday.com
+
+Keywords: XOXODAY support, merchant contact, gift card help
+
+
+Q: Why is the app not loading or crashing?
+
+A:
+
+It may be due to slow or unstable internet.
+
+The app version may be outdated.
+
+There may be a temporary app/server glitch.
+Keywords: app crashing, app not loading, app freeze
+
+Q: What should I do if the app is not loading?
+
+A:
+
+Close and reopen the app.
+
+Restart your phone.
+
+Check your internet connection.
+
+Update the app from Google Play.
+Keywords: fix app crash, app troubleshooting, update app
+
+Q: Why are tasks or offers not loading or not crediting?
+
+A:
+
+It may be due to poor internet connectivity.
+
+Tracking may not have completed properly.
+Keywords: offer not credited, tasks not loading, survey issue
+
+Q: What should I do if tasks are not crediting?
+
+A:
+
+Ensure you have a stable internet connection.
+
+Contact support if the issue continues.
+Keywords: reward not credited, task issue, support help
