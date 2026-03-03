@@ -43,13 +43,13 @@ def search_docs(query, offer_name=None):
         )
         docs = results.get("documents", [[]])[0] or []
         dists = results.get("distances", [[]])[0] or [None] * len(docs)
-        # Keep only close matches; fall back to top-1 if none pass threshold
-        threshold = 0.35
+        # Keep only very close matches; fall back to top-1 if none pass threshold
+        threshold = 0.25
         filtered = [doc for doc, dist in zip(docs, dists) if dist is None or dist <= threshold]
         if not filtered and docs:
             filtered = [docs[0]]
-        # Return top 2 for concise prompting
-        return filtered[:2]
+        # Return only the single best chunk to reduce drift
+        return filtered[:1]
     except Exception:
         # Fallback: return empty to trigger graceful handling
         return []

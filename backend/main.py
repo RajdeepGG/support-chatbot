@@ -193,8 +193,29 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         response_buffer += chunk
         yield chunk
     
+    # Sanitize tone and keep only concise, relevant text
+    def _sanitize(text: str) -> str:
+        t = text.strip()
+        # Drop pleasantries and open-ended follow-ups
+        blacklist = [
+            r"(?i)\b(i'?m glad|happy to help|would you like|is there anything else|let me know|can i help with|feel free to ask)\b",
+            r"(?i)\b(i can guide you|i can assist you)\b",
+        ]
+        import re
+        for pat in blacklist:
+            t = re.sub(pat, "", t)
+        t = re.sub(r"\s{2,}", " ", t).strip()
+        # Keep max 2 sentences or first 5 bullet lines
+        bullets = [ln for ln in t.splitlines() if ln.strip().startswith(("*", "-"))]
+        if bullets:
+            return "\n".join(bullets[:5]).strip()
+        # Sentence clamp
+        sentences = re.split(r"(?<=[.!?])\s+", t)
+        return " ".join(sentences[:2]).strip()
+
+    sanitized = _sanitize(response_buffer)
     # Final content filtering on complete response (avoid duplicating full reply)
-    filtered_response = guard_rails.content_filter.filter_response(response_buffer)
+    filtered_response = guard_rails.content_filter.filter_response(sanitized)
     if guard_rails.domain_guard.response_off_topic(filtered_response):
         yield "\nI can help with offer-related support. Please ask an offer-related question."
         return
