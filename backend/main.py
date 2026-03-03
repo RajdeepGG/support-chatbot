@@ -195,6 +195,9 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     
     # Final content filtering on complete response (avoid duplicating full reply)
     filtered_response = guard_rails.content_filter.filter_response(response_buffer)
+    if guard_rails.domain_guard.response_off_topic(filtered_response):
+        yield "\nI can help with offer-related support. Please ask an offer-related question."
+        return
     if filtered_response != response_buffer:
         if filtered_response.startswith(response_buffer):
             note = filtered_response[len(response_buffer):].strip()

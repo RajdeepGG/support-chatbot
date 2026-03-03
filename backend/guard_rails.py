@@ -124,13 +124,39 @@ class InputValidator:
 
 class DomainGuard:
     def __init__(self):
+        self.offer_terms = [
+            r'(?i)\boffer\b',
+            r'(?i)\breward|coin|point|wallet|payout|withdraw(al)?\b',
+            r'(?i)\bverification|pending|completed|expired|status\b',
+            r'(?i)\btask|install|app|game|track(ed|ing)?|credit(ed)?\b',
+            r'(?i)\bgift\s*card|redeem\b',
+            r'(?i)\breferral|refer|invite|code\b',
+        ]
         self.out_of_scope_patterns = [
             r'(?i)\b(java|python|javascript|c\+\+|c#|golang|ruby|code|coding|program|compile|algorithm)\b',
             r'(?i)\bmath|physics|chemistry|biology\b',
             r'(?i)\btravel|hotel|flight|weather\b',
+            r'(?i)\bbank|banking|account\s*number|ifsc|iban|swift|cheque|passbook\b',
+            r'(?i)\bcard|cvv|otp|pin|pan|aadhaar|kyc\b',
+            r'(?i)\bupi\s*id|transaction|statement|balance|branch\b',
+            r'(?i)\bmedical|health|doctor|prescription|diagnosis\b',
+            r'(?i)\blegal|lawyer|court|lawsuit\b',
+            r'(?i)\brelationship|dating|personal\s+advice\b',
         ]
     
     def is_out_of_scope(self, text: str) -> bool:
+        for term in self.offer_terms:
+            if re.search(term, text):
+                return False
+        for pattern in self.out_of_scope_patterns:
+            if re.search(pattern, text):
+                return True
+        return False
+
+    def response_off_topic(self, text: str) -> bool:
+        for term in self.offer_terms:
+            if re.search(term, text):
+                return False
         for pattern in self.out_of_scope_patterns:
             if re.search(pattern, text):
                 return True
