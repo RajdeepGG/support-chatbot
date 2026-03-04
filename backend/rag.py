@@ -33,7 +33,20 @@ def load_docs():
         )
 
 def search_docs(query, offer_name=None):
-    search_text = query
+    # Normalize common synonyms/misspellings to improve recall
+    norm = query.lower()
+    replacements = {
+        "payout": "withdrawal",
+        "cashout": "withdrawal",
+        "cash out": "withdrawal",
+        "upi payout": "upi withdrawal",
+        "referal": "referral",
+        "referrel": "referral",
+        "giftcard": "gift card",
+    }
+    for k, v in replacements.items():
+        norm = norm.replace(k, v)
+    search_text = norm
     embedding = model.encode(search_text).tolist()
     try:
         results = collection.query(
