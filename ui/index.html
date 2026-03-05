@@ -225,6 +225,17 @@
       currentBotBubble.appendChild(typingEl);
       chatLog.scrollTop = chatLog.scrollHeight;
     }
+    function cancelTypingBubble() {
+      if (typingEl && typingEl.parentElement) {
+        typingEl.remove();
+      }
+      typingEl = null;
+      if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
+          (currentBotBubble.textContent || "").trim() === "") {
+        currentBotBubble.remove();
+      }
+      currentBotBubble = null;
+    }
     function hideTypingIndicator() {
       if (typingEl) { typingEl.remove(); typingEl = null; }
     }
@@ -254,7 +265,6 @@
         }
       };
       ws.onmessage = (event) => {
-        if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         if (event.data === "\n\n") {
           hideTypingIndicator();
           // If nothing was written and this was a typing-only bubble, remove it
@@ -265,6 +275,7 @@
           currentBotBubble = null;
           return;
         }
+        if (!currentBotBubble) currentBotBubble = addBubble("", "bot");
         hideTypingIndicator();
         currentBotBubble.removeAttribute("data-typing-only");
         currentBotBubble.textContent += event.data;
@@ -602,6 +613,7 @@
       const msg = msgInput.value.trim();
       const offer = offerSelect.value;
       if (!msg) return;
+      cancelTypingBubble(); // remove any previous placeholder before starting a new one
       addBubble(msg, "user");
       currentBotBubble = null;
       pendingInitialMsg = msg;
