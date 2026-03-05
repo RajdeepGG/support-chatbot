@@ -324,11 +324,11 @@
       endBtn.style.display = "inline-block";
       if (ISSUE_TYPE_PARAM) {
         const m = `I need help with ${ISSUE_TYPE_PARAM}.`;
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          sendPayload(m, "");
-        } else {
-          pendingInitialMsg = m;
-        }
+        msgInput.value = m; // prefill only, do not auto-send
+        msgInput.focus();
+        // Ensure any previous typing bubble is cleared since we are not sending yet
+        cancelTypingBubble();
+        pendingInitialMsg = ""; // explicitly avoid auto-sending on reconnect
       }
     } else {
       // Hide End button in guided mode
