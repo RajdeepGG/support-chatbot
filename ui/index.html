@@ -154,6 +154,8 @@
     let pendingInitialMsg = null;
     let pendingStartTyping = false;
     let chatEnded = false;
+    let lastSentText = "";
+    let lastSentAt = 0;
 
     function setOfferFromData({ offerId, offerName, offerIconUrl, status }) {
       if (!offerId) return;
@@ -258,10 +260,7 @@
         if (pendingInitialMsg) {
           const m = pendingInitialMsg;
           pendingInitialMsg = null;
-          addBubble(m, "user");
-          currentBotBubble = null;
-          showTypingIndicator();
-          try { ws.send(JSON.stringify({ message: m, offer_id: "" })); } catch (e) {}
+          sendPayload(m, "");
         }
       };
       ws.onmessage = (event) => {
@@ -325,14 +324,10 @@
       endBtn.style.display = "inline-block";
       if (ISSUE_TYPE_PARAM) {
         const m = `I need help with ${ISSUE_TYPE_PARAM}.`;
-        pendingInitialMsg = m;
         if (ws && ws.readyState === WebSocket.OPEN) {
-          const tmp = pendingInitialMsg;
-          pendingInitialMsg = null;
-          addBubble(tmp, "user");
-          currentBotBubble = addBubble("", "bot");
-          showTypingIndicator();
-          try { ws.send(JSON.stringify({ message: tmp, offer_id: "" })); } catch (e) {}
+          sendPayload(m, "");
+        } else {
+          pendingInitialMsg = m;
         }
       }
     } else {
@@ -609,22 +604,30 @@
     sendBtn.addEventListener("click", send);
     msgInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
 
+    function sendPayload(text, offerId) {
+      const now = Date.now();
+      const key = (text || "").trim().toLowerCase();
+      if (key && key === lastSentText && (now - lastSentAt) < 1500) {
+        return; // dedupe fast double-sends
+      }
+      lastSentText = key; lastSentAt = now;
+      cancelTypingBubble();
+      addBubble(text, "user");
+      currentBotBubble = null;
+      showTypingIndicator();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ message: text, offer_id: offerId || "" })); } catch (e) {}
+      } else {
+        pendingInitialMsg = text;
+        try { connect(); } catch (e) {}
+      }
+    }
     function send() {
       const msg = msgInput.value.trim();
       const offer = offerSelect.value;
       if (!msg) return;
-      cancelTypingBubble(); // remove any previous placeholder before starting a new one
-      addBubble(msg, "user");
-      currentBotBubble = null;
-      pendingInitialMsg = msg;
-      showTypingIndicator();
       msgInput.value = "";
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        try { ws.send(JSON.stringify({ message: msg, offer_id: offer })); } catch (e) {}
-        pendingInitialMsg = null;
-      } else {
-        try { connect(); } catch (e) {}
-      }
+      sendPayload(msg, offer);
     }
 
     function showTypeIssue() {
