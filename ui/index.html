@@ -151,6 +151,7 @@
       LLM_ENABLED &&
       (!qpAll.get("offerId") || !qpAll.get("offerName") || !qpAll.get("offerIconUrl") || !qpAll.get("userId"))
     );
+    const USER_ID_PARAM = qpAll.get("userId") || "";
     let pendingInitialMsg = null;
     let pendingStartTyping = false;
     let chatEnded = false;
@@ -504,6 +505,23 @@
     function showReportIssue() {
       const title = offerSelect.options[offerSelect.selectedIndex]?.text || "Offer";
       const offerId = offerSelect.value || "";
+      const payload = {
+        offerId,
+        offerName: title,
+        userId: USER_ID_PARAM,
+        issueType: ISSUE_TYPE_PARAM || "",
+        source: "ai_ticket_responder"
+      };
+      // Prefer Android native ticket screen if bridge is available
+      try {
+        if (window.Android && typeof Android.openTicket === "function") {
+          Android.openTicket(JSON.stringify(payload));
+          addBubble("Opening ticket form…", "bot");
+          endChat();
+          return;
+        }
+      } catch (e) {}
+      // Fallback to email composer
       const subject = encodeURIComponent(`Issue with offer ${title}${offerId ? ` (${offerId})` : ""}`);
       const body = encodeURIComponent("Describe your issue briefly, including screenshots if possible.");
       const mailto = `mailto:support@greedygame.com?subject=${subject}&body=${body}`;
