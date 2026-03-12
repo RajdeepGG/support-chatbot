@@ -14,6 +14,7 @@ import sla
 import offer_logic
 import mock_offer_api
 import guard_rails
+import uuid
 CHAT_MODE = os.getenv("CHAT_MODE", "full")
 if CHAT_MODE != "decision_tree":
     import rag
@@ -259,6 +260,35 @@ async def chat(request: ChatRequest, client_request: Request):
             yield chunk
             
     return StreamingResponse(response_generator(), media_type="text/plain")
+
+class ChatSyncResponse(BaseModel):
+    message_id: str
+    text: str
+    finish_reason: str = "stop"
+
+@app.post("/v1/chat-sync", response_model=ChatSyncResponse)
+async def chat_sync(request: ChatRequest, client_request: Request):
+    client_ip = client_request.client.host if client_request.client else "unknown"
+    buf = []
+    async for chunk in process_chat(request.message, request.offer_id, client_ip):
+        buf.append(chunk)
+    return ChatSyncResponse(message_id=str(uuid.uuid4()), text="".join(buf), finish_reason="stop")
+
+@app.post("/v1/chat-stream")
+async def chat_stream(request: ChatRequest, client_request: Request):
+    client_ip = client_request.client.host if client_request.client else "unknown"
+    async def gen():
+        async for chunk in process_chat(request.message, request.offer_id, client_ip):
+            yield json.dumps({"delta": chunk}) + "\n"
+        yield json.dumps({"event": "end"}) + "\n"
+    return StreamingResponse(gen(), media_type="application/x-ndjson")
+
+class EndSessionRequest(BaseModel):
+    reason: Optional[str] = None
+
+@app.post("/v1/session/end")
+async def end_session(_: EndSessionRequest, client_request: Request):
+    return {"ok": True}
 
 # WebSocket Endpoint
 @app.websocket("/ws")
