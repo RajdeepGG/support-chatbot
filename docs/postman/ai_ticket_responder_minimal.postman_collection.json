@@ -1,0 +1,103 @@
+{
+  "info": {
+    "_postman_id": "2b9c2c0e-3f62-44b8-9e8c-5e2da3df3c01",
+    "name": "AI Ticket Responder — Minimal (HTTP only)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Minimal HTTP-only collection for the AI Ticket Responder backend."
+  },
+  "variable": [
+    { "key": "host", "value": "brudlab.com" },
+    { "key": "userId", "value": "U123" },
+    { "key": "offerId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Chat (non‑stream) — /v1/chat-sync",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{userId}}" },
+          { "key": "X-Client-Platform", "value": "android" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I need help with referral.\",\n  \"offer_id\": \"{{offerId}}\"\n}"
+        },
+        "url": {
+          "raw": "https://{{host}}/v1/chat-sync",
+          "protocol": "https",
+          "host": ["{{host}}"],
+          "path": ["v1", "chat-sync"]
+        },
+        "description": "Returns JSON { message_id, text, finish_reason }."
+      }
+    },
+    {
+      "name": "Chat (NDJSON stream) — /v1/chat-stream",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{userId}}" },
+          { "key": "X-Client-Platform", "value": "android" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I need help with payout.\",\n  \"offer_id\": \"{{offerId}}\"\n}"
+        },
+        "url": {
+          "raw": "https://{{host}}/v1/chat-stream",
+          "protocol": "https",
+          "host": ["{{host}}"],
+          "path": ["v1", "chat-stream"]
+        },
+        "description": "Streams application/x-ndjson lines: {\"delta\":\"...\"} … then {\"event\":\"end\"}."
+      }
+    },
+    {
+      "name": "Chat (HTTP streaming) — /chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{userId}}" },
+          { "key": "X-Client-Platform", "value": "android" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"When will I be rewarded?\",\n  \"offer_id\": \"{{offerId}}\"\n}"
+        },
+        "url": {
+          "raw": "https://{{host}}/chat",
+          "protocol": "https",
+          "host": ["{{host}}"],
+          "path": ["chat"]
+        },
+        "description": "Streams text/plain; end of reply is the delimiter \"\\n\\n\"."
+      }
+    },
+    {
+      "name": "End Session — /v1/session/end",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{userId}}" },
+          { "key": "X-Client-Platform", "value": "android" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"user_end\"\n}"
+        },
+        "url": {
+          "raw": "https://{{host}}/v1/session/end",
+          "protocol": "https",
+          "host": ["{{host}}"],
+          "path": ["v1", "session", "end"]
+        },
+        "description": "Signals session end for non‑WS clients. Returns {\"ok\": true}."
+      }
+    }
+  ]
+}

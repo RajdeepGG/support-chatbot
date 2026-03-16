@@ -220,9 +220,9 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     if guard_rails.domain_guard.response_off_topic(filtered_response):
         yield "\nI can help with offer-related support. Please ask an offer-related question."
         return
-    if filtered_response != response_buffer:
-        if filtered_response.startswith(response_buffer):
-            note = filtered_response[len(response_buffer):].strip()
+    if filtered_response != sanitized:
+        if filtered_response.startswith(sanitized):
+            note = filtered_response[len(sanitized):].strip()
             if note:
                 yield "\n" + note
         else:
