@@ -22,7 +22,7 @@
     select, input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #34415f; background: #0f1424; color: #e6edf7; font-size: 14px; }
     input:focus, select:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 4px rgba(74,144,226,.4); }
     .chat { background: #12192b; border: 1px solid #253047; min-height: 360px; max-height: 62vh; border-radius: 14px; padding: 12px; overflow-y: auto; }
-    .bubble { max-width: 85%; border-radius: 14px; padding: 12px 14px; margin: 8px 0; font-size: 15px; line-height: 1.55; box-shadow: none; color: #e6edf7; }
+    .bubble { max-width: 85%; border-radius: 14px; padding: 12px 14px; margin: 8px 0; font-size: 15px; line-height: 1.55; box-shadow: none; color: #e6edf7; white-space: pre-wrap; }
     .bubble.user { margin-left: auto; background: #2a3856; color: #dbe6ff; }
     .bubble.bot { background: #26334d; border: 1px solid #34415f; }
     .typing { display: inline-flex; align-items: center; gap: 6px; }
@@ -267,10 +267,28 @@
       ws.onmessage = (event) => {
         if (event.data === "\n\n") {
           hideTypingIndicator();
-          // If nothing was written and this was a typing-only bubble, remove it
           if (currentBotBubble && currentBotBubble.getAttribute("data-typing-only") === "1" &&
               (currentBotBubble.textContent || "").trim() === "") {
             currentBotBubble.remove();
+            currentBotBubble = null;
+            return;
+          }
+          if (currentBotBubble) {
+            const t = (currentBotBubble.textContent || "").trim();
+            const shouldCta =
+              t.endsWith("If it exceeds 48 hours, contact support with screenshots.") ||
+              /let me connect you to a human agent/i.test(t);
+            if (shouldCta) {
+              const btn = document.createElement("button");
+              btn.className = "send";
+              btn.textContent = "Contact Support";
+              btn.onclick = showReportIssue;
+              const holder = document.createElement("div");
+              holder.style.marginTop = "8px";
+              holder.appendChild(btn);
+              chatLog.appendChild(holder);
+              chatLog.scrollTop = chatLog.scrollHeight;
+            }
           }
           currentBotBubble = null;
           return;
