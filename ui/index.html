@@ -275,9 +275,12 @@
           }
           if (currentBotBubble) {
             const t = (currentBotBubble.textContent || "").trim();
-            const shouldCta =
-              t.endsWith("If it exceeds 48 hours, contact support with screenshots.") ||
-              /let me connect you to a human agent/i.test(t);
+            const norm = t.replace(/\s+/g, " ").toLowerCase();
+            const pattern1 = /if it exceed[s]?\s*48\s*hour[s]?,?\s*(please )?contact support/;
+            const pattern2 = /contact support.*48\s*hour[s]?/;
+            const pattern3 = /(let me|i will)?\s*(connect|escalate)\s+you\s+to\s+(a\s+)?human(\s+agent)?/;
+            const pattern4 = /talk to (a\s+)?human(\s+agent)?/;
+            const shouldCta = pattern1.test(norm) || pattern2.test(norm) || pattern3.test(norm) || pattern4.test(norm);
             if (shouldCta) {
               const btn = document.createElement("button");
               btn.className = "send";

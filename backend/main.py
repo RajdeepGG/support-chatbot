@@ -283,10 +283,19 @@ async def chat_stream(request: ChatRequest, client_request: Request):
             buf.append(chunk)
             yield json.dumps({"delta": chunk}) + "\n"
         full = "".join(buf).strip()
-        should_cta = (
-            full.endswith("If it exceeds 48 hours, contact support with screenshots.") or
-            ("let me connect you to a human agent" in full.lower())
-        )
+        # Robust CTA detection
+        import re
+        norm = re.sub(r"\s+", " ", full).strip().lower()
+        # Allow minor punctuation/spacing differences around 48 hours + contact support
+        trigger_patterns = [
+            r"if it exceed[s]?\s*48\s*hour[s]?,?\s*(please )?contact support",
+            r"contact support.*48\s*hour[s]?",
+        ]
+        escalate_patterns = [
+            r"(let me|i will)?\s*(connect|escalate)\s+you\s+to\s+(a\s+)?human(\s+agent)?",
+            r"talk to (a\s+)?human(\s+agent)?",
+        ]
+        should_cta = any(re.search(p, norm) for p in trigger_patterns) or any(re.search(p, norm) for p in escalate_patterns)
         if should_cta:
             payload = {"event": "cta", "action": "open_ticket", "label": "Contact Support"}
             yield json.dumps(payload) + "\n"
