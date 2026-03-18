@@ -278,9 +278,11 @@
             const norm = t.replace(/\s+/g, " ").toLowerCase();
             const pattern1 = /if it exceed[s]?\s*48\s*hour[s]?,?\s*(please )?contact support/;
             const pattern2 = /contact support.*48\s*hour[s]?/;
-            const pattern3 = /(let me|i will)?\s*(connect|escalate)\s+you\s+to\s+(a\s+)?human(\s+agent)?/;
-            const pattern4 = /talk to (a\s+)?human(\s+agent)?/;
-            const shouldCta = pattern1.test(norm) || pattern2.test(norm) || pattern3.test(norm) || pattern4.test(norm);
+            const pattern2b = /contact (?:our\s+)?support (?:team|desk|agent)s?/;
+            const pattern3 = /(let me|i will)?\s*(connect|escalate)\s+you(?:\s+\w+){0,3}\s+to\s+(?:a\s+)?human(?:\s+agent)?/;
+            const pattern4 = /not\s+able\s+to\s+connect\s+you(?:\s+\w+){0,3}\s+to\s+(?:a\s+)?human(?:\s+agent)?/;
+            const pattern5 = /talk to (a\s+)?human(\s+agent)?/;
+            const shouldCta = pattern1.test(norm) || pattern2.test(norm) || pattern2b.test(norm) || pattern3.test(norm) || pattern4.test(norm) || pattern5.test(norm);
             if (shouldCta) {
               const btn = document.createElement("button");
               btn.className = "send";

@@ -290,9 +290,11 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         trigger_patterns = [
             r"if it exceed[s]?\s*48\s*hour[s]?,?\s*(please )?contact support",
             r"contact support.*48\s*hour[s]?",
+            r"contact (?:our\s+)?support (?:team|desk|agent)s?",
         ]
         escalate_patterns = [
-            r"(let me|i will)?\s*(connect|escalate)\s+you\s+to\s+(a\s+)?human(\s+agent)?",
+            r"(let me|i will)?\s*(connect|escalate)\s+you(?:\s+\w+){0,3}\s+to\s+(?:a\s+)?human(?:\s+agent)?",
+            r"not\s+able\s+to\s+connect\s+you(?:\s+\w+){0,3}\s+to\s+(?:a\s+)?human(?:\s+agent)?",
             r"talk to (a\s+)?human(\s+agent)?",
         ]
         should_cta = any(re.search(p, norm) for p in trigger_patterns) or any(re.search(p, norm) for p in escalate_patterns)
