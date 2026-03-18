@@ -299,9 +299,9 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         ]
         should_cta = any(re.search(p, norm) for p in trigger_patterns) or any(re.search(p, norm) for p in escalate_patterns)
         if should_cta:
-            payload = {"event": "cta", "action": "open_ticket", "label": "Contact Support"}
-            yield json.dumps(payload) + "\n"
-        yield json.dumps({"event": "end"}) + "\n"
+            yield json.dumps({"event": "end", "action": {"type": "escalate_to_agent", "payload": {}}}) + "\n"
+        else:
+            yield json.dumps({"event": "end"}) + "\n"
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 
 class EndSessionRequest(BaseModel):
