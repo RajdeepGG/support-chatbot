@@ -139,8 +139,8 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     
     norm_greet = user_msg.strip().lower()
     if norm_greet in {"hi", "hello", "hey", "yo"} or len(norm_greet) < 4:
-        yield ("Tell me your offer issue so I can help:\n"
-               "- Rewards pending for 24–48 hours\n"
+        yield ("Thanks for reaching out. Please tell me your offer issue:\n"
+               "- Rewards pending (24–48 hours)\n"
                "- Offer marked expired\n"
                "- App install not tracked\n"
                "- Withdrawal not received")
