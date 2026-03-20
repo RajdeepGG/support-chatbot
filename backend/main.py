@@ -137,6 +137,15 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         yield "I can help with offer-related support. Please ask an offer-related question."
         return
     
+    norm_greet = user_msg.strip().lower()
+    if norm_greet in {"hi", "hello", "hey", "yo"} or len(norm_greet) < 4:
+        yield ("Tell me your offer issue so I can help:\n"
+               "- Rewards pending for 24–48 hours\n"
+               "- Offer marked expired\n"
+               "- App install not tracked\n"
+               "- Withdrawal not received")
+        return
+    
     if CHAT_MODE == "decision_tree":
         yield "Please use the options above to continue."
         return

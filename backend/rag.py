@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer
 import chromadb
 import os
+import re
 
 client = chromadb.Client()
 collection = client.get_or_create_collection("support_docs")
@@ -35,6 +36,10 @@ def load_docs():
 def search_docs(query, offer_name=None):
     # Normalize common synonyms/misspellings to improve recall
     norm = query.lower()
+    if not norm or len(norm.strip()) < 4:
+        return []
+    if re.fullmatch(r"\b(hi|hello|hey|yo|hola)\b", norm.strip()):
+        return []
     replacements = {
         "payout": "withdrawal",
         "cashout": "withdrawal",
@@ -59,9 +64,8 @@ def search_docs(query, offer_name=None):
         # Keep only very close matches; fall back to top-1 if none pass threshold
         threshold = 0.25
         filtered = [doc for doc, dist in zip(docs, dists) if dist is None or dist <= threshold]
-        if not filtered and docs:
-            filtered = [docs[0]]
-        # Return only the single best chunk to reduce drift
+        if not filtered:
+            return []
         return filtered[:1]
     except Exception:
         # Fallback: return empty to trigger graceful handling
