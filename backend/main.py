@@ -146,6 +146,20 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
                "- Withdrawal not received")
         return
     
+    try:
+        import re as _re
+        _norm = _re.sub(r"\s+", " ", user_msg).strip().lower()
+        _ask_human = any(_re.search(p, _norm) for p in [
+            r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
+            r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
+            r"human\s+support|human\s+agent",
+        ])
+        if _ask_human:
+            yield "I’m not sure about this. Let me connect you to a human agent."
+            return
+    except Exception:
+        pass
+    
     if CHAT_MODE == "decision_tree":
         yield "Please use the options above to continue."
         return
@@ -295,6 +309,7 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         # Robust CTA detection
         import re
         norm = re.sub(r"\s+", " ", full).strip().lower()
+        inorm = re.sub(r"\s+", " ", request.message or "").strip().lower()
         # Allow minor punctuation/spacing differences around 48 hours + contact support
         trigger_patterns = [
             r"if it exceed[s]?\s*48\s*hour[s]?,?\s*(please )?contact support",
@@ -309,7 +324,16 @@ async def chat_stream(request: ChatRequest, client_request: Request):
             r"talk to (a\s+)?human(\s+agent)?",
             r"not\s+(?:a\s+)?direct\s+contact\s+to\s+(?:a\s+)?human\s+agent[s]?",
         ]
-        should_cta = any(re.search(p, norm) for p in trigger_patterns) or any(re.search(p, norm) for p in escalate_patterns)
+        ask_human_input = any(re.search(p, inorm) for p in [
+            r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
+            r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
+            r"\bhuman\s+(support|agent)s?\b",
+        ])
+        should_cta = (
+            any(re.search(p, norm) for p in trigger_patterns) or
+            any(re.search(p, norm) for p in escalate_patterns) or
+            ask_human_input
+        )
         if should_cta:
             yield json.dumps({"event": "end", "action": {"type": "escalate_to_agent", "payload": {}}}) + "\n"
         else:
