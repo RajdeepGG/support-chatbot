@@ -40,6 +40,11 @@ def search_docs(query, offer_name=None):
         return []
     if re.fullmatch(r"\b(hi|hello|hey|yo|hola)\b", norm.strip()):
         return []
+    # Common offer-support keywords to relax matching
+    support_keywords = [
+        "reward", "rewards", "wallet", "coin", "payout", "withdraw", "withdrawal",
+        "verification", "pending", "completed", "expired", "status", "offer", "credit"
+    ]
     replacements = {
         "payout": "withdrawal",
         "cashout": "withdrawal",
@@ -61,11 +66,15 @@ def search_docs(query, offer_name=None):
         )
         docs = results.get("documents", [[]])[0] or []
         dists = results.get("distances", [[]])[0] or [None] * len(docs)
-        # Keep only very close matches; fall back to top-1 if none pass threshold
+        # Dynamic threshold: relax for longer queries or known keywords
+        has_keywords = any(k in norm for k in support_keywords)
         threshold = 0.25
+        if len(norm) >= 12 or has_keywords:
+            threshold = 0.45
         filtered = [doc for doc, dist in zip(docs, dists) if dist is None or dist <= threshold]
-        if not filtered:
-            return []
+        # Controlled fallback: only for sufficiently informative queries
+        if not filtered and docs and (len(norm) >= 12 or has_keywords):
+            filtered = [docs[0]]
         return filtered[:1]
     except Exception:
         # Fallback: return empty to trigger graceful handling
