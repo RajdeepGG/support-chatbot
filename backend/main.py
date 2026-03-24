@@ -337,6 +337,12 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         if should_cta:
             yield json.dumps({"event": "end", "action": {"type": "escalate_to_agent", "payload": {}}}) + "\n"
         else:
+            csat = {
+                "event": "csat",
+                "question": "Was this helpful?",
+                "scale": 5
+            }
+            yield json.dumps(csat) + "\n"
             yield json.dumps({"event": "end"}) + "\n"
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 

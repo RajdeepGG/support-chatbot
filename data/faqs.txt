@@ -4,10 +4,10 @@ Q: Why I am not getting reward?
 Q: After completing the task, points are not credited
 A:
 - Advertisers verify your completion before releasing rewards.
-- This usually takes 24–48 hours; some offers may take longer.
+- This usually takes 48–72 hours; some offers may take longer.
 - Keep the app/game installed and active during this window.
-- If it exceeds 48 hours, contact support with screenshots.
-Keywords: reward, wallet, pending, verification, 24-48 hours, not received
+- If it exceeds 72 hours, contact support with screenshots.
+Keywords: reward, wallet, pending, verification, 48 hours, not received, offer
 
 
 Q: Offer shows “Pending” or “Under verification”
@@ -15,9 +15,9 @@ Q: All tasks are completed but verification is pending
 Q: Task completed but progress not updated
 A:
 - “Pending/Under verification” means the advertiser is reviewing your activity.
-- Typical verification window is 24–48 hours after completing all steps.
+- Typical verification window is 48-72 hours after completing all steps.
 - Do not uninstall the app; continue normal usage for 20–30 minutes.
-- If pending beyond 48 hours, reach out to support with proof.
+- If pending beyond 72 hours, reach out to support with proof.
 Keywords: pending, under verification, verify, delay, timeline
 
 
@@ -40,8 +40,8 @@ Keywords: ongoing, partial, incomplete, progress
 Q: I redeemed a gift card but didn’t receive the email
 A:
 - Check your Spam/Junk folder for the gift card email.
-- If still missing, contact XOXODAY support at cs@xoxoday.com.
-Keywords: gift card, redemption, email, xoxoday, not received
+- If still missing, contact merchant “XOXODAY" support at cs@xoxoday.com.
+Keywords: gift card, redemption, email, xoxoday
 
 
 Q: UPI/bank withdrawal not received
@@ -61,6 +61,20 @@ A:
 - Do not use VPNs, proxies, automation tools, or third‑party scripts to complete offers.
 - Disable such tools and use your real device/network.
 Keywords: account hold, blocked, vpn, policy, violation
+
+Q: Suspicious Environment Issue.
+A:
+- If the deloper option is ON, you will get this error message.
+- If there is any clone App installed, you will get this error message.
+- If the device does not have enough applications to perform normal operation, you will get this error message.
+Keywords: suspicious environment, developer options, cloned app, device integrity
+
+
+Q: Why am I unable to see the survey options?
+A:
+- Survey offers are based on the requirements of the advertisers
+- Survey offers are subject to the location of your account.
+Keywords: survey options missing, location restriction, eligibility, advertiser requirements
 
 
 Q: When will I get the referral reward?
@@ -164,10 +178,9 @@ Keywords: gift card delay, merchant email issue
 
 Q: How do I contact the merchant for gift card issues?
 A:
-- Share your Payment ID.
-- Mention the merchant name.
+- Share your email ID.
 - Request help with the gift card or redemption code.
-- Merchant Name: XOXODAY
+- Merchant Name: XOXODAY.
 - Contact: cs@xoxoday.com
 
 Keywords: XOXODAY support, merchant contact, gift card help
@@ -178,7 +191,6 @@ A:
 - It may be due to slow or unstable internet.
 - The app version may be outdated.
 - There may be a temporary app/server glitch.
-There may be a temporary app/server glitch.
 Keywords: app crashing, app not loading, app freeze
 
 Q: What should I do if the app is not loading?
@@ -187,7 +199,6 @@ A:
 - Restart your phone.
 - Check your internet connection.
 - Update the app from Google Play.
-Update the app from Google Play.
 Keywords: fix app crash, app troubleshooting, update app
 
 Q: Why are tasks or offers not loading or not crediting?
@@ -195,6 +206,8 @@ A:
 - It may be due to poor internet connectivity.
 - Tracking may not have completed properly.
 Tracking may not have completed properly.
+Keywords: tasks not crediting, offers not loading, tracking issue, internet connectivity
+
 
 Q: What should I do if tasks are not crediting?
 A:
