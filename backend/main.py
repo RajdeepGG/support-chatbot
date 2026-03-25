@@ -160,7 +160,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
             r"human\s+support|human\s+agent",
         ])
         if _ask_human:
-            yield "I’m not sure about this. Let me connect you to a human agent."
+            yield "Connecting you to a human agent. One moment please."
             return
     except Exception:
         pass
