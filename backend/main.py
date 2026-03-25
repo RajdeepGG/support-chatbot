@@ -306,6 +306,11 @@ async def chat_sync(request: ChatRequest, client_request: Request):
 async def chat_stream(request: ChatRequest, client_request: Request):
     client_ip = client_request.client.host if client_request.client else "unknown"
     async def gen():
+        if guard_rails.domain_guard.is_out_of_scope(request.message or ""):
+            yield json.dumps({"delta": "I can help with offer-related support. Please ask an offer-related question."}) + "\n"
+            yield json.dumps({"event": "csat", "question": "Was this helpful?", "scale": 5}) + "\n"
+            yield json.dumps({"event": "end"}) + "\n"
+            return
         buf = []
         async for chunk in process_chat(request.message, request.offer_id, client_ip):
             buf.append(chunk)
