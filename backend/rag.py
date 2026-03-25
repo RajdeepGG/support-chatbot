@@ -50,9 +50,17 @@ def search_docs(query, offer_name=None):
         "cashout": "withdrawal",
         "cash out": "withdrawal",
         "upi payout": "upi withdrawal",
+        "payment": "withdrawal",
+        "money": "withdrawal",
+        "cash": "withdrawal",
+        "did not get my money": "withdrawal not received",
+        "didn't get my money": "withdrawal not received",
+        "not get my money": "withdrawal not received",
+        "not credited": "not received",
         "referal": "referral",
         "referrel": "referral",
         "giftcard": "gift card",
+        "gift voucher": "gift card",
     }
     for k, v in replacements.items():
         norm = norm.replace(k, v)

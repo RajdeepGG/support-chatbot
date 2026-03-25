@@ -200,7 +200,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     
     system_prompt = (
         "You are a helpful offer-support assistant. Use ONLY the provided context to answer. "
-        "If the answer is not in the context, say you don't know. "
+        "If the exact answer is not in the context, provide the closest relevant guidance from it; do not say you don't know. "
         "Respond in the user's language when possible. "
         "Keep answers brief: max 80 words, or 3–5 concise bullets. "
         "Do not repeat sentences, do not invent examples, tables, or stories. "
