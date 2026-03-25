@@ -243,6 +243,15 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         return " ".join(sentences[:2]).strip()
 
     sanitized = _sanitize(response_buffer)
+    um = (user_msg or "").lower()
+    if (("completed" in um) and any(p in um for p in ["not get", "not received", "not credited", "didn't get", "did not get"])) or \
+       (("reward" in um) and ("completed" in um)):
+        sanitized = (
+            "Your offer is completed but the reward is not credited.\n"
+            "- Advertisers typically verify completion within 48–72 hours.\n"
+            "- Keep the app/game installed and active during this window.\n"
+            "- If it exceeds 72 hours, contact support with screenshots."
+        )
     # Final content filtering on complete response (avoid duplicating full reply)
     filtered_response = guard_rails.content_filter.filter_response(sanitized)
     if guard_rails.domain_guard.response_off_topic(filtered_response):
