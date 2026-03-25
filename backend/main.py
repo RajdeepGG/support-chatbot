@@ -146,6 +146,11 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
                "- Withdrawal not received")
         return
     
+    norm_thanks = norm_greet
+    if any(p in norm_thanks for p in ["thanks", "thank you", "appreciated", "resolved", "issue resolved", "clear now"]):
+        yield "Thank you. If you need further assistance, reply here or explore other available offers."
+        return
+    
     try:
         import re as _re
         _norm = _re.sub(r"\s+", " ", user_msg).strip().lower()
