@@ -205,13 +205,14 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     
     system_prompt = (
         "You are a helpful offer-support assistant. Use ONLY the provided context to answer. "
-        "If the exact answer is not in the context, provide the closest relevant guidance from it; do not say you don't know. "
+        "If the exact answer is not in the context, provide the closest relevant guidance from it. "
         "Respond in the user's language when possible. "
         "Keep answers brief: max 80 words, or 3–5 concise bullets. "
         "Do not repeat sentences, do not invent examples, tables, or stories. "
         "Prefer clear, actionable guidance (e.g., typical verification window is 24–48 hours). "
         "Never include sensitive information or discuss illegal activities. "
-        "If asked about sensitive topics, politely decline and suggest contacting support."
+        "If asked about sensitive topics, politely decline and suggest contacting support. "
+        "Do not mention a website or external portal; if escalation is needed, say to raise a ticket from the app or contact support by email."
     )
     
     full_prompt = f"{system_prompt}\n\nContext:\n{context_str}\n\nUser Question: {user_msg}\nAnswer:"
@@ -243,6 +244,15 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         return " ".join(sentences[:2]).strip()
 
     sanitized = _sanitize(response_buffer)
+    def _channelize(text: str) -> str:
+        import re
+        t = text
+        t = re.sub(r"(?i)raise a ticket\s+(?:on|via)\s+(?:our\s+)?website", "raise a ticket from the app", t)
+        t = re.sub(r"(?i)click the \"?chat with us\"?\s+button\s+on\s+(?:our\s+)?website", "open the app and use the support option", t)
+        t = re.sub(r"(?i)on\s+(?:our\s+)?website", "in the app", t)
+        t = re.sub(r"(?i)\[website url\]", "the app", t)
+        return re.sub(r"\s{2,}", " ", t).strip()
+    sanitized = _channelize(sanitized)
     um = (user_msg or "").lower()
     if (("completed" in um) and any(p in um for p in ["not get", "not received", "not credited", "didn't get", "did not get"])) or \
        (("reward" in um) and ("completed" in um)):
