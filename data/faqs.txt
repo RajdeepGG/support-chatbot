@@ -214,3 +214,34 @@ A:
 - Ensure you have a stable internet connection.
 - Contact support if the issue continues.
 Keywords: reward not credited, task issue, support help
+
+Q: How can I withdraw my earnings?
+A:
+- Tap on the Coins icon at the top right of the home page, then select the Redeem button.
+- Choose your preferred payout method.
+- If you select UPI payout, please make sure the details entered are correct.
+Payouts are usually instant, but in some cases, they may take up to 72 hours depending on bank processing times.
+keywords: Payout, Withdraw, Redeem coins, Transfer money.
+
+Q: What is the customer care number?
+A: 
+- At the moment, we do not offer support via a customer care phone number.
+- However, our team is always happy to assist you through email and chat support.
+- Please raise a ticket, and we'll make sure to help you as quickly as possible.
+keywords: Support number, Customer care number, phone number
+
+Q: What are your customer care timings?
+A: 
+- Our support team typically responds to your query within 48 hours.
+- You can raise a ticket at any time, as there are no restrictions on submitting requests.
+
+Q: Can I get a refund?
+A: 
+- If you have made an in-app purchase, please raise a ticket and share the transaction details with our team so we can assist you further.
+- If your request is regarding rewards not being credited, we kindly ask you to wait for up to 72 hours, as verification may take some time.
+
+Q: Can I restart the offer again?
+A: 
+- It is not possible to reattempt an offer immediately after completing or attempting it.
+- We recommend waiting at least 90 days before trying the same offer again.
+- Please note that reattempts are only allowed if the advertiser permits it as per the offer requirements.
