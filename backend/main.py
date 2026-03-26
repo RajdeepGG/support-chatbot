@@ -153,22 +153,14 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     
     try:
         import re as _re
-        _norm = _re.sub(r"\s+", " ", user_msg).strip().lower()
-        _ask_human = any(_re.search(p, _norm) for p in [
-            r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
-            r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
-            r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
-            r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
-            r"\b(connect|escalate)\s+me\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
-            r"\btalk\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)\b",
-            r"\bhuman\s+support\b|\bhuman\s+agent\b",
-        ])
-        _ticket_intent = any(_re.search(p, _norm) for p in [
-            r"\b(raise|open|create|submit|file)\s+(?:a\s+)?(support\s+)?ticket\b",
-            r"\b(support\s+)?ticket\s+(?:please|now|today)\b",
-            r"\braise\s+(?:a\s+)?request\b",
-        ])
-        if _ask_human or _ticket_intent:
+        _norm = _re.sub(r"\s+", " ", user_msg or "").strip().lower()
+        _tokens = _re.findall(r"[a-z]+", _norm)
+        _verbs = {"connect","escalate","talk","speak","transfer","reach","contact","open","create","submit","file","raise"}
+        _targets = {"human","support","customer","care","agent","representative","associate","executive","person","service","team"}
+        _has_verb = any(t in _verbs for t in _tokens)
+        _has_target = any(t in _targets for t in _tokens)
+        _ticket = ("ticket" in _tokens or "request" in _tokens) and any(t in {"open","create","submit","file","raise"} for t in _tokens)
+        if (_has_verb and _has_target) or _ticket:
             yield "One moment please..."
             return
     except Exception:
@@ -362,17 +354,10 @@ async def chat_stream(request: ChatRequest, client_request: Request):
             r"talk to (a\s+)?human(\s+agent)?",
             r"not\s+(?:a\s+)?direct\s+contact\s+to\s+(?:a\s+)?human\s+agent[s]?",
         ]
-        ask_human_input = any(re.search(p, inorm) for p in [
-            r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
-            r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
-            r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
-            r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
-            r"\b(connect|escalate)\s+me\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
-            r"\btalk\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)\b",
-            r"\bhuman\s+(support|agent)s?\b",
-            r"\b(raise|open|create|submit|file)\s+(?:a\s+)?(support\s+)?ticket\b",
-            r"\braise\s+(?:a\s+)?request\b",
-        ])
+        _tokens = re.findall(r"[a-z]+", inorm)
+        _verbs = {"connect","escalate","talk","speak","transfer","reach","contact","open","create","submit","file","raise"}
+        _targets = {"human","support","customer","care","agent","representative","associate","executive","person","service","team"}
+        ask_human_input = (any(t in _verbs for t in _tokens) and any(t in _targets for t in _tokens)) or (("ticket" in _tokens or "request" in _tokens) and any(t in {"open","create","submit","file","raise"} for t in _tokens))
         should_cta = (
             any(re.search(p, norm) for p in trigger_patterns) or
             any(re.search(p, norm) for p in escalate_patterns) or
