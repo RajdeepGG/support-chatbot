@@ -245,3 +245,11 @@ A:
 - It is not possible to reattempt an offer immediately after completing or attempting it.
 - We recommend waiting at least 90 days before trying the same offer again.
 - Please note that reattempts are only allowed if the advertiser permits it as per the offer requirements.
+
+Q: I did all the steps.
+Q: I already did all these steps
+Q: I did these steps and still not working
+A:
+- If you have already tried all the steps, we kindly request you to record the issue and raise a ticket.
+- Please make sure to attach the screen recording, as it will help our team investigate and assist you more effectively.
+Keywords - Issue persists, Tried all steps, Troubleshooting not working
