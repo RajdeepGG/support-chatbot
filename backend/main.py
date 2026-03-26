@@ -157,7 +157,9 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         _ask_human = any(_re.search(p, _norm) for p in [
             r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
             r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
-            r"human\s+support|human\s+agent",
+            r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
+            r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
+            r"\bhuman\s+support\b|\bhuman\s+agent\b",
         ])
         if _ask_human:
             yield "One moment please..."
@@ -356,6 +358,8 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         ask_human_input = any(re.search(p, inorm) for p in [
             r"(connect|escalate)\s+me\s+to\s+(?:a\s+)?human(\s+agent)?",
             r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
+            r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
+            r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
             r"\bhuman\s+(support|agent)s?\b",
         ])
         should_cta = (
