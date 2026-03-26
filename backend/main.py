@@ -159,6 +159,8 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
             r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
             r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
             r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
+            r"\b(connect|escalate)\s+me\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
+            r"\btalk\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)\b",
             r"\bhuman\s+support\b|\bhuman\s+agent\b",
         ])
         _ticket_intent = any(_re.search(p, _norm) for p in [
@@ -365,6 +367,8 @@ async def chat_stream(request: ChatRequest, client_request: Request):
             r"talk\s+to\s+(?:a\s+)?human(\s+agent)?",
             r"\b(connect|escalate)\s+me\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
             r"\btalk\s+to\s+(?:a\s+)?(?:customer\s+support|support|customer\s+care|agent|representative|associate)\b",
+            r"\b(connect|escalate)\s+me\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)(?:\s+(?:person|service))?\b",
+            r"\btalk\s+with\s+(?:a\s+)?(?:human|customer\s+support|support|customer\s+care|agent|representative|associate)\b",
             r"\bhuman\s+(support|agent)s?\b",
             r"\b(raise|open|create|submit|file)\s+(?:a\s+)?(support\s+)?ticket\b",
             r"\braise\s+(?:a\s+)?request\b",
