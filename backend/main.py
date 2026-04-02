@@ -157,8 +157,8 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         _tokens = _re.findall(r"[a-z]+", _norm)
         _verbs = {"connect","escalate","talk","speak","transfer","reach","contact","open","create","submit","file","raise"}
         _targets = {"human","support","customer","care","agent","representative","associate","executive","person","service","team"}
-        _has_verb = any(t in _verbs for t in _tokens)
-        _has_target = any(t in _targets for t in _tokens)
+        _has_verb = any(t in _verbs for t in _tokens) or any(any(v in t for v in _verbs) for t in _tokens)
+        _has_target = any(t in _targets for t in _tokens) or any(any(trg in t for trg in _targets) for t in _tokens)
         _ticket = ("ticket" in _tokens or "request" in _tokens) and any(t in {"open","create","submit","file","raise"} for t in _tokens)
         if (_has_verb and _has_target) or _ticket:
             yield "One moment please..."
@@ -357,7 +357,10 @@ async def chat_stream(request: ChatRequest, client_request: Request):
         _tokens = re.findall(r"[a-z]+", inorm)
         _verbs = {"connect","escalate","talk","speak","transfer","reach","contact","open","create","submit","file","raise"}
         _targets = {"human","support","customer","care","agent","representative","associate","executive","person","service","team"}
-        ask_human_input = (any(t in _verbs for t in _tokens) and any(t in _targets for t in _tokens)) or (("ticket" in _tokens or "request" in _tokens) and any(t in {"open","create","submit","file","raise"} for t in _tokens))
+        has_verb = any(t in _verbs for t in _tokens) or any(any(v in t for v in _verbs) for t in _tokens)
+        has_target = any(t in _targets for t in _tokens) or any(any(trg in t for trg in _targets) for t in _tokens)
+        ticket_intent = (("ticket" in _tokens or "request" in _tokens) and any(t in {"open","create","submit","file","raise"} for t in _tokens))
+        ask_human_input = (has_verb and has_target) or ticket_intent
         should_cta = (
             any(re.search(p, norm) for p in trigger_patterns) or
             any(re.search(p, norm) for p in escalate_patterns) or
