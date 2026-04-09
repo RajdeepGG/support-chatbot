@@ -4,3 +4,4 @@ chromadb
 sentence-transformers
 requests
 pydantic
+prometheus-client

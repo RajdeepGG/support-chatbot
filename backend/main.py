@@ -15,6 +15,7 @@ import offer_logic
 import mock_offer_api
 import guard_rails
 import uuid
+import observability
 CHAT_MODE = os.getenv("CHAT_MODE", "full")
 if CHAT_MODE != "decision_tree":
     import rag
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.middleware("http")(observability.access_log_middleware)
 UI_DIR = str(Path(__file__).resolve().parent.parent / "ui")
 app.mount("/ui", StaticFiles(directory=UI_DIR, html=True), name="ui")
 app.mount("/icons", StaticFiles(directory=Path(UI_DIR) / "icons"), name="icons")
@@ -44,6 +46,12 @@ async def root_page():
 @app.get("/favicon.ico")
 async def favicon():
     return Response(status_code=204)
+
+@app.get("/metrics")
+async def metrics():
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    data = generate_latest()
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
 
 # --------------------------------------------------------------------------
 # WebSocket Connection Manager with Inactivity Monitoring
@@ -220,9 +228,11 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
 
     # Yield chunks from LLM and filter responses
     response_buffer = ""
+    llm_start = time.time()
     for chunk in llm.ask_llm(full_prompt):
         response_buffer += chunk
         yield chunk
+    llm_ms = int((time.time() - llm_start) * 1000)
     
     # Sanitize tone and keep only concise, relevant text
     def _sanitize(text: str) -> str:
@@ -263,6 +273,19 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
             "- Keep the app/game installed and active during this window.\n"
             "- If it exceeds 72 hours, contact support with screenshots."
         )
+    try:
+        observability.log_llm(
+            request_id=str(uuid.uuid4()),
+            model=os.getenv("MODEL_NAME", ""),
+            prompt=full_prompt,
+            completion=sanitized,
+            duration_ms=llm_ms,
+            tokens_prompt=0,
+            tokens_completion=0,
+            status="ok",
+        )
+    except Exception:
+        pass
     # Final content filtering on complete response (avoid duplicating full reply)
     filtered_response = guard_rails.content_filter.filter_response(sanitized)
     if guard_rails.domain_guard.response_off_topic(filtered_response):
@@ -367,8 +390,16 @@ async def chat_stream(request: ChatRequest, client_request: Request):
             ask_human_input
         )
         if should_cta:
+            try:
+                observability.ESCALATE_COUNTER.inc()
+            except Exception:
+                pass
             yield json.dumps({"event": "end", "action": {"type": "escalate_to_agent", "payload": {}}}) + "\n"
         else:
+            try:
+                observability.CSAT_COUNTER.inc()
+            except Exception:
+                pass
             csat = {
                 "event": "csat",
                 "question": "Was this helpful?",
