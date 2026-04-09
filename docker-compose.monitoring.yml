@@ -8,6 +8,8 @@ services:
       - prom_data:/prometheus
     ports:
       - "127.0.0.1:9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   grafana:
