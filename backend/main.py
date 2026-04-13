@@ -119,11 +119,40 @@ async def startup_event():
     # Start the background monitor
     asyncio.create_task(inactivity_monitor())
 
+def _request_id_from_http(request: Request) -> str:
+    return request.headers.get("x-request-id") or str(uuid.uuid4())
+
+def _log_chat_request_safe(request_id: str, channel: str, message: str, offer_id: Optional[str], client_ip: str):
+    try:
+        observability.log_chat_request(
+            request_id=request_id,
+            channel=channel,
+            message=message,
+            offer_id=offer_id or "",
+            client_ip=client_ip,
+        )
+    except Exception:
+        pass
+
+def _log_chat_response_safe(request_id: str, channel: str, response: str, duration_ms: int, offer_id: Optional[str], status: str = "ok"):
+    try:
+        observability.log_chat_response(
+            request_id=request_id,
+            channel=channel,
+            response=response,
+            duration_ms=duration_ms,
+            offer_id=offer_id or "",
+            status=status,
+        )
+    except Exception:
+        pass
+
 # -------------------------------------------------------------------------
 # Chat Logic (Refactored for reuse)
 # -------------------------------------------------------------------------
 
-async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = "unknown"):
+async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = "unknown", request_id: Optional[str] = None):
+    request_id = request_id or str(uuid.uuid4())
     # 1. Input Validation
     validation_result = guard_rails.input_validator.validate_input(user_msg)
     if not validation_result["valid"]:
@@ -275,7 +304,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         )
     try:
         observability.log_llm(
-            request_id=str(uuid.uuid4()),
+            request_id=request_id,
             model=os.getenv("MODEL_NAME", ""),
             prompt=full_prompt,
             completion=sanitized,
@@ -325,10 +354,29 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat(request: ChatRequest, client_request: Request):
     client_ip = client_request.client.host if client_request.client else "unknown"
+    request_id = _request_id_from_http(client_request)
+    _log_chat_request_safe(request_id, "http", request.message, request.offer_id, client_ip)
     
     async def response_generator():
-        async for chunk in process_chat(request.message, request.offer_id, client_ip):
-            yield chunk
+        buf = []
+        status = "ok"
+        start = time.time()
+        try:
+            async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+                buf.append(chunk)
+                yield chunk
+        except Exception:
+            status = "error"
+            raise
+        finally:
+            _log_chat_response_safe(
+                request_id,
+                "http",
+                "".join(buf),
+                int((time.time() - start) * 1000),
+                request.offer_id,
+                status=status,
+            )
             
     return StreamingResponse(response_generator(), media_type="text/plain")
 
@@ -340,24 +388,67 @@ class ChatSyncResponse(BaseModel):
 @app.post("/v1/chat-sync", response_model=ChatSyncResponse)
 async def chat_sync(request: ChatRequest, client_request: Request):
     client_ip = client_request.client.host if client_request.client else "unknown"
+    request_id = _request_id_from_http(client_request)
+    _log_chat_request_safe(request_id, "chat_sync", request.message, request.offer_id, client_ip)
     buf = []
-    async for chunk in process_chat(request.message, request.offer_id, client_ip):
-        buf.append(chunk)
+    status = "ok"
+    start = time.time()
+    try:
+        async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+            buf.append(chunk)
+    except Exception:
+        status = "error"
+        raise
+    finally:
+        _log_chat_response_safe(
+            request_id,
+            "chat_sync",
+            "".join(buf),
+            int((time.time() - start) * 1000),
+            request.offer_id,
+            status=status,
+        )
     return ChatSyncResponse(message_id=str(uuid.uuid4()), text="".join(buf), finish_reason="stop")
 
 @app.post("/v1/chat-stream")
 async def chat_stream(request: ChatRequest, client_request: Request):
     client_ip = client_request.client.host if client_request.client else "unknown"
+    request_id = _request_id_from_http(client_request)
+    _log_chat_request_safe(request_id, "chat_stream", request.message, request.offer_id, client_ip)
     async def gen():
+        start = time.time()
+        status = "ok"
         if guard_rails.domain_guard.is_out_of_scope(request.message or ""):
-            yield json.dumps({"delta": "I can help with offer-related support. Please ask an offer-related question."}) + "\n"
+            response_text = "I can help with offer-related support. Please ask an offer-related question."
+            yield json.dumps({"delta": response_text}) + "\n"
+            _log_chat_response_safe(
+                request_id,
+                "chat_stream",
+                response_text,
+                int((time.time() - start) * 1000),
+                request.offer_id,
+                status=status,
+            )
             yield json.dumps({"event": "csat", "question": "Was this helpful?", "scale": 5}) + "\n"
             yield json.dumps({"event": "end"}) + "\n"
             return
         buf = []
-        async for chunk in process_chat(request.message, request.offer_id, client_ip):
-            buf.append(chunk)
-            yield json.dumps({"delta": chunk}) + "\n"
+        try:
+            async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+                buf.append(chunk)
+                yield json.dumps({"delta": chunk}) + "\n"
+        except Exception:
+            status = "error"
+            raise
+        finally:
+            _log_chat_response_safe(
+                request_id,
+                "chat_stream",
+                "".join(buf),
+                int((time.time() - start) * 1000),
+                request.offer_id,
+                status=status,
+            )
         full = "".join(buf).strip()
         # Robust CTA detection
         import re
@@ -435,10 +526,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_msg = payload.get("message", "")
                 offer_id = payload.get("offer_id")
                 event = payload.get("event")
+                request_id = payload.get("request_id") or str(uuid.uuid4())
             except json.JSONDecodeError:
                 user_msg = data
                 offer_id = None
                 event = None
+                request_id = str(uuid.uuid4())
             
             if event == "clear_chat":
                 manager.nudge_enabled[websocket] = True
@@ -460,19 +553,43 @@ async def websocket_endpoint(websocket: WebSocket):
             if not user_msg:
                 continue
 
+            _log_chat_request_safe(request_id, "ws", user_msg, offer_id, client_ip)
+
             # Cancel previous generation for this socket, if any
             prev = client_tasks.get(websocket)
             if prev and not prev.done():
                 prev.cancel()
                 try:
                     await prev
+                except asyncio.CancelledError:
+                    pass
                 except Exception:
                     pass
 
-            async def stream_to_ws():
-                async for chunk in process_chat(user_msg, offer_id, client_ip):
-                    await manager.send_message(chunk, websocket)
-                await manager.send_message("\n\n", websocket)
+            async def stream_to_ws(current_user_msg=user_msg, current_offer_id=offer_id, current_request_id=request_id):
+                buf = []
+                status = "ok"
+                start = time.time()
+                try:
+                    async for chunk in process_chat(current_user_msg, current_offer_id, client_ip, request_id=current_request_id):
+                        buf.append(chunk)
+                        await manager.send_message(chunk, websocket)
+                    await manager.send_message("\n\n", websocket)
+                except asyncio.CancelledError:
+                    status = "cancelled"
+                    raise
+                except Exception:
+                    status = "error"
+                    raise
+                finally:
+                    _log_chat_response_safe(
+                        current_request_id,
+                        "ws",
+                        "".join(buf),
+                        int((time.time() - start) * 1000),
+                        current_offer_id,
+                        status=status,
+                    )
 
             task = asyncio.create_task(stream_to_ws())
             client_tasks[websocket] = task
@@ -494,6 +611,8 @@ async def websocket_endpoint(websocket: WebSocket):
             prev.cancel()
             try:
                 await prev
+            except asyncio.CancelledError:
+                pass
             except Exception:
                 pass
         if websocket in client_tasks:

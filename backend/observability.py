@@ -48,6 +48,21 @@ def _max_len():
     except Exception:
         return 512
 
+def _chat_mode():
+    return _env("CHAT_LOG_MODE", _mode()).lower()
+
+def _chat_sample_rate():
+    try:
+        return float(_env("CHAT_LOG_SAMPLE_RATE", _env("LLM_LOG_SAMPLE_RATE", "0.0")))
+    except Exception:
+        return 0.0
+
+def _chat_max_len():
+    try:
+        return int(_env("CHAT_LOG_MAX_CHARS", _env("LLM_LOG_MAX_CHARS", "512")))
+    except Exception:
+        return 512
+
 def _redact(text: str) -> str:
     import re
     t = text or ""
@@ -156,3 +171,57 @@ def log_llm(request_id: str, model: str, prompt: str, completion: str, duration_
     }
     print(json.dumps(js, ensure_ascii=False))
 
+def _chat_text_fields(text: str):
+    mode = _chat_mode()
+    sample_rate = _chat_sample_rate()
+    text = text or ""
+    text_chars = len(text)
+    if mode == "off":
+        return mode, {"text_chars": text_chars}
+    import random
+    do_log = random.random() < sample_rate if sample_rate > 0 else False
+    if not do_log:
+        return "meta", {
+            "text_chars": text_chars,
+            "text_hash": _hash(text),
+        }
+    max_len = _chat_max_len()
+    if mode == "full":
+        return mode, {
+            "text_chars": text_chars,
+            "text": text[:max_len],
+        }
+    return "redacted", {
+        "text_chars": text_chars,
+        "text_preview": _redact(text)[:max_len],
+        "text_hash": _hash(text),
+    }
+
+def _print_chat(js: dict, text: str):
+    mode, fields = _chat_text_fields(text)
+    payload = dict(js)
+    payload["mode"] = mode
+    payload.update(fields)
+    print(json.dumps(payload, ensure_ascii=False))
+
+def log_chat_request(request_id: str, channel: str, message: str, offer_id: str = "", client_ip: str = "", status: str = "received"):
+    js = {
+        "component": "chat_request",
+        "request_id": request_id,
+        "channel": channel,
+        "offer_id": offer_id or "",
+        "client_ip": client_ip or "",
+        "status": status,
+    }
+    _print_chat(js, message)
+
+def log_chat_response(request_id: str, channel: str, response: str, duration_ms: int, offer_id: str = "", status: str = "ok"):
+    js = {
+        "component": "chat_response",
+        "request_id": request_id,
+        "channel": channel,
+        "offer_id": offer_id or "",
+        "duration_ms": duration_ms,
+        "status": status,
+    }
+    _print_chat(js, response)
