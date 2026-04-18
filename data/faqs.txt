@@ -2,6 +2,9 @@ Q: When will I be rewarded?
 Q: Reward not received yet
 Q: Why I am not getting reward?
 Q: After completing the task, points are not credited
+Q: mujhe poine nahi mila mein task comepelit kar liya fir bhi nahi mila
+Q: where is my reward
+Q: where is my reward?
 A:
 - Advertisers verify your completion before releasing rewards.
 - This usually takes 48–72 hours; some offers may take longer.
@@ -205,7 +208,7 @@ Q: Why are tasks or offers not loading or not crediting?
 A:
 - It may be due to poor internet connectivity.
 - Tracking may not have completed properly.
-Tracking may not have completed properly.
+
 Keywords: tasks not crediting, offers not loading, tracking issue, internet connectivity
 
 
@@ -253,3 +256,10 @@ A:
 - If you have already tried all the steps, we kindly request you to record the issue and raise a ticket.
 - Please make sure to attach the screen recording, as it will help our team investigate and assist you more effectively.
 Keywords - Issue persists, Tried all steps, Troubleshooting not working
+
+Q: Delete my account
+Q: How to delet this account
+Q: I want to delete account
+A:
+- Please reach out to customer support team.
+Keywords - delete, Account delete

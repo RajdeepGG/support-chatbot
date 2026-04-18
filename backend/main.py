@@ -16,7 +16,9 @@ import mock_offer_api
 import guard_rails
 import uuid
 import observability
+import offer_context as offer_context_mod
 CHAT_MODE = os.getenv("CHAT_MODE", "full")
+OFFER_CONTEXT_ENABLED = os.getenv("OFFER_CONTEXT_ENABLED", "0").strip().lower() in {"1", "true", "yes", "on"}
 if CHAT_MODE != "decision_tree":
     import rag
     import llm
@@ -151,7 +153,7 @@ def _log_chat_response_safe(request_id: str, channel: str, response: str, durati
 # Chat Logic (Refactored for reuse)
 # -------------------------------------------------------------------------
 
-async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = "unknown", request_id: Optional[str] = None):
+async def process_chat(user_msg: str, offer_id: Optional[str], offer_context: Optional[Dict] = None, client_ip: str = "unknown", request_id: Optional[str] = None):
     request_id = request_id or str(uuid.uuid4())
     # 1. Input Validation
     validation_result = guard_rails.input_validator.validate_input(user_msg)
@@ -206,6 +208,28 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
     if CHAT_MODE == "decision_tree":
         yield "Please use the options above to continue."
         return
+
+    topic = offer_context_mod.detect_topic(user_msg)
+    kb_only_topics = {
+        "payout",
+        "gift_card",
+        "referral",
+        "app_issue",
+        "survey",
+        "device_integrity",
+        "account_hold",
+        "support_contact",
+        "refund",
+    }
+
+    summary = None
+    offer_specific = None
+    if topic not in kb_only_topics and OFFER_CONTEXT_ENABLED and offer_context:
+        summary = offer_context_mod.summarize_offer_context(offer_context)
+        if summary and not offer_id and summary.oid:
+            offer_id = summary.oid
+        if summary:
+            offer_specific = offer_context_mod.offer_aware_response(summary, user_msg)
     
     # 5. Determine Priority
     priority_level = priority.determine_priority(user_msg)
@@ -218,16 +242,25 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         offer = mock_offer_api.get_offer_details(offer_id)
         if offer:
             offer_context_query = offer_logic.get_offer_faq_query(offer)
+    if summary:
+        offer_context_query = f"{offer_context_query}\n{offer_context_mod.offer_context_prompt(summary)}".strip()
     
     # 3. Construct Search Query
-    search_query = f"{user_msg} {offer_context_query}".strip()
+    # For KB-only topics, avoid polluting retrieval with offer details.
+    if topic in kb_only_topics:
+        search_query = user_msg.strip()
+    else:
+        search_query = f"{user_msg} {offer_context_query}".strip()
     
     # 4. Search Knowledge Base
     docs = rag.search_docs(search_query)
     
     # 5. Fallback Logic
     if not docs or len(docs) == 0:
-        yield "I’m not sure about this. Let me connect you to a human agent."
+        yield (
+            "I didn’t understand that. Please explain in a bit more detail.\n"
+            "- What issue are you facing (reward not received / offer expired / withdrawal not received)?"
+        )
         return
 
     # 6. Generate Response with LLM
@@ -240,6 +273,45 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         return "\n".join(lines).strip()
     context_docs = [ _clean_context(d) for d in docs[:2] ]
     context_str = "\n\n".join(context_docs)
+
+    def _kb_answer_from_context(ctx: str) -> str:
+        lines = (ctx or "").splitlines()
+        out = []
+        in_a = False
+        for ln in lines:
+            if ln.strip().startswith("A:"):
+                in_a = True
+                continue
+            if in_a and ln.strip().startswith("Q:"):
+                break
+            if in_a:
+                out.append(ln)
+        text = "\n".join([l for l in out if l.strip()]).strip()
+        if text:
+            return text
+        filtered = [ln for ln in lines if not ln.strip().startswith("Q:")]
+        return "\n".join([ln for ln in filtered if ln.strip()][:6]).strip()
+
+    def _get_best_kb() -> str:
+        for c in context_docs:
+            txt = _kb_answer_from_context(c)
+            if txt:
+                return txt
+        return _kb_answer_from_context(context_str)
+
+    if topic in kb_only_topics:
+        kb_text = _get_best_kb()
+        if kb_text:
+            yield kb_text
+            return
+
+    if offer_specific:
+        kb_text = _get_best_kb()
+        combined = offer_specific
+        if kb_text and kb_text not in offer_specific:
+            combined = f"{offer_specific}\n\n{kb_text}"
+        yield combined
+        return
     
     system_prompt = (
         "You are a helpful offer-support assistant. Use ONLY the provided context to answer. "
@@ -253,14 +325,65 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
         "Do not mention a website or external portal; if escalation is needed, say to raise a ticket from the app or contact support by email."
     )
     
-    full_prompt = f"{system_prompt}\n\nContext:\n{context_str}\n\nUser Question: {user_msg}\nAnswer:"
+    offer_block = ""
+    if summary:
+        offer_block = f"\n\nOffer Context:\n{offer_context_mod.offer_context_prompt(summary)}"
+    full_prompt = f"{system_prompt}\n\nContext:\n{context_str}{offer_block}\n\nUser Question: {user_msg}\nAnswer:"
 
     # Yield chunks from LLM and filter responses
     response_buffer = ""
     llm_start = time.time()
+    preview = ""
+    stream_started = False
+    tail = ""
+
+    def _looks_like_prompt_echo(txt: str) -> bool:
+        t = (txt or "").lower()
+        return (
+            "you are a helpful offer-support assistant" in t
+            or "use only the provided context to answer" in t
+            or "\ncontext:" in t
+            or "user question:" in t
+        )
+
     for chunk in llm.ask_llm(full_prompt):
-        response_buffer += chunk
-        yield chunk
+        if stream_started:
+            import re
+            candidate = (tail + chunk)
+            low = candidate.lower()
+            m = re.search(r"(?:^|\n)\s*user question\b", low) or re.search(r"(?:^|\n)\s*answer\s*:?", low)
+            if m:
+                cut = m.start() - len(tail)
+                if cut > 0:
+                    out = chunk[:cut]
+                    response_buffer += out
+                    yield out
+                return
+            response_buffer += chunk
+            tail = candidate[-250:]
+            yield chunk
+            continue
+
+        preview += chunk
+        if len(preview) < 200 and "\n" not in preview:
+            continue
+
+        if _looks_like_prompt_echo(preview):
+            kb_text = _kb_answer_from_context(context_docs[0] if context_docs else context_str)
+            if kb_text:
+                yield kb_text
+                return
+            yield "Please raise a ticket from the app so our support team can help."
+            return
+
+        stream_started = True
+        response_buffer += preview
+        tail = preview[-250:]
+        yield preview
+
+    if not stream_started and preview:
+        response_buffer += preview
+        yield preview
     llm_ms = int((time.time() - llm_start) * 1000)
     
     # Sanitize tone and keep only concise, relevant text
@@ -350,6 +473,7 @@ async def process_chat(user_msg: str, offer_id: Optional[str], client_ip: str = 
 class ChatRequest(BaseModel):
     message: str
     offer_id: Optional[str] = None
+    offer_context: Optional[Dict] = None
 
 @app.post("/chat")
 async def chat(request: ChatRequest, client_request: Request):
@@ -362,7 +486,7 @@ async def chat(request: ChatRequest, client_request: Request):
         status = "ok"
         start = time.time()
         try:
-            async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+            async for chunk in process_chat(request.message, request.offer_id, request.offer_context, client_ip, request_id=request_id):
                 buf.append(chunk)
                 yield chunk
         except Exception:
@@ -394,7 +518,7 @@ async def chat_sync(request: ChatRequest, client_request: Request):
     status = "ok"
     start = time.time()
     try:
-        async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+        async for chunk in process_chat(request.message, request.offer_id, request.offer_context, client_ip, request_id=request_id):
             buf.append(chunk)
     except Exception:
         status = "error"
@@ -429,12 +553,11 @@ async def chat_stream(request: ChatRequest, client_request: Request):
                 request.offer_id,
                 status=status,
             )
-            yield json.dumps({"event": "csat", "question": "Was this helpful?", "scale": 5}) + "\n"
             yield json.dumps({"event": "end"}) + "\n"
             return
         buf = []
         try:
-            async for chunk in process_chat(request.message, request.offer_id, client_ip, request_id=request_id):
+            async for chunk in process_chat(request.message, request.offer_id, request.offer_context, client_ip, request_id=request_id):
                 buf.append(chunk)
                 yield json.dumps({"delta": chunk}) + "\n"
         except Exception:
@@ -491,12 +614,6 @@ async def chat_stream(request: ChatRequest, client_request: Request):
                 observability.CSAT_COUNTER.inc()
             except Exception:
                 pass
-            csat = {
-                "event": "csat",
-                "question": "Was this helpful?",
-                "scale": 5
-            }
-            yield json.dumps(csat) + "\n"
             yield json.dumps({"event": "end"}) + "\n"
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 
@@ -525,11 +642,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 payload = json.loads(data)
                 user_msg = payload.get("message", "")
                 offer_id = payload.get("offer_id")
+                offer_context = payload.get("offer_context")
                 event = payload.get("event")
                 request_id = payload.get("request_id") or str(uuid.uuid4())
             except json.JSONDecodeError:
                 user_msg = data
                 offer_id = None
+                offer_context = None
                 event = None
                 request_id = str(uuid.uuid4())
             
@@ -566,12 +685,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 except Exception:
                     pass
 
-            async def stream_to_ws(current_user_msg=user_msg, current_offer_id=offer_id, current_request_id=request_id):
+            async def stream_to_ws(current_user_msg=user_msg, current_offer_id=offer_id, current_offer_context=offer_context, current_request_id=request_id):
                 buf = []
                 status = "ok"
                 start = time.time()
                 try:
-                    async for chunk in process_chat(current_user_msg, current_offer_id, client_ip, request_id=current_request_id):
+                    async for chunk in process_chat(current_user_msg, current_offer_id, current_offer_context, client_ip, request_id=current_request_id):
                         buf.append(chunk)
                         await manager.send_message(chunk, websocket)
                     await manager.send_message("\n\n", websocket)

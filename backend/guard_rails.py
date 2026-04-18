@@ -98,6 +98,15 @@ class InputValidator:
         if len(text) > self.max_length:
             return {"valid": False, "message": "Message is too long. Please keep it under 1000 characters."}
         
+        if self._looks_like_gibberish(text):
+            return {
+                "valid": False,
+                "message": (
+                    "I didn’t understand that. Please explain in a bit more detail.\n"
+                    "- What issue are you facing (reward pending / offer expired / install not tracked / withdrawal not received)?"
+                ),
+            }
+
         # Check for excessive repetition
         if self._has_excessive_repetition(text):
             return {"valid": False, "message": "Message contains excessive repetition."}
@@ -117,6 +126,25 @@ class InputValidator:
                     return True
         
         return False
+
+    def _looks_like_gibberish(self, text: str) -> bool:
+        s = (text or "").strip().lower()
+        if len(s) < 8:
+            return False
+        tokens = s.split()
+        if len(tokens) > 2:
+            return False
+        cleaned = re.sub(r"[^a-z]", "", s)
+        if len(cleaned) < 8:
+            return False
+        vowels = sum(1 for ch in cleaned if ch in "aeiou")
+        vowel_ratio = vowels / max(1, len(cleaned))
+        unique_ratio = len(set(cleaned)) / max(1, len(cleaned))
+        if vowel_ratio >= 0.25:
+            return False
+        if unique_ratio >= 0.6:
+            return False
+        return True
 
 # -------------------------------------------------------------------------
 # Domain Guard (keep assistant within offer-support scope)
