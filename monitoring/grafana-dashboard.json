@@ -39,7 +39,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "targets": [
         {
-          "expr": "sum(increase(http_requests_total[5m]))",
+          "expr": "sum(increase(http_requests_total[$__range]))",
           "legendFormat": "total",
           "refId": "A"
         }
