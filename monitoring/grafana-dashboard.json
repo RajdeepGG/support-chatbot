@@ -39,7 +39,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "targets": [
         {
-          "expr": "sum(increase(http_requests_total[$__range]))",
+          "expr": "sum(increase(http_requests_total{path!=\"/metrics\"}[$__range]))",
           "legendFormat": "total",
           "refId": "A"
         }
@@ -114,7 +114,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "targets": [
         {
-          "expr": "topk(6, sum by (path) (rate(http_requests_total[5m])))",
+          "expr": "topk(6, sum by (path) (rate(http_requests_total{path!=\"/metrics\"}[5m])))",
           "legendFormat": "{{path}}",
           "refId": "A"
         }
